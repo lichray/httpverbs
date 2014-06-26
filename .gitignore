@@ -1,0 +1,15 @@
+# vim
+*~
+.*.swp
+
+# cmake
+build/
+Makefile
+/*.cmake
+CMakeCache.txt
+CMakeFiles/
+
+# ctest
+*.log
+Testing/
+DartConfiguration.tcl
