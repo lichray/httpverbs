@@ -23,28 +23,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_EXCEPTIONS_H
-#define HTTPVERBS_EXCEPTIONS_H
+#ifndef HTTPVERBS_CONFIG_H
+#define HTTPVERBS_CONFIG_H
 
-#include "config.h"
-
-#include <stdexcept>
-
-namespace httpverbs
-{
-
-struct bad_request : std::exception
-{
-	bad_request() {}
-	char const* what() const NOEXCEPT;
-};
-
-struct bad_response : std::runtime_error
-{
-	template <typename ErrorType>
-	explicit bad_response(ErrorType ec);
-};
-
-}
+#if defined(_MSC_VER)
+#define NOEXCEPT throw()
+#else
+#define NOEXCEPT noexcept
+#endif
 
 #endif

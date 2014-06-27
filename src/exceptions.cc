@@ -30,7 +30,7 @@
 namespace httpverbs
 {
 
-char const* bad_request::what() const noexcept
+char const* bad_request::what() const NOEXCEPT
 {
 	return "curl_easy_init failed";
 }
