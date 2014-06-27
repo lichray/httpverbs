@@ -27,12 +27,17 @@
 
 #include <curl/curl.h>
 
+#include <stdexcept>
+
 namespace httpverbs
 {
 
 enable_library::enable_library()
 {
-	curl_global_init(CURL_GLOBAL_DEFAULT | CURL_GLOBAL_ACK_EINTR);
+	auto r = curl_global_init(CURL_GLOBAL_DEFAULT | CURL_GLOBAL_ACK_EINTR);
+
+	if (r != CURLE_OK)
+		throw std::runtime_error(curl_easy_strerror(r));
 }
 
 enable_library::~enable_library()
