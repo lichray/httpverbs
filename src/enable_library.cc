@@ -23,19 +23,19 @@
  * SUCH DAMAGE.
  */
 
-#include <httpverbs/guard.h>
+#include <httpverbs/enable_library.h>
 
 #include <curl/curl.h>
 
 namespace httpverbs
 {
 
-guard::guard()
+enable_library::enable_library()
 {
-	curl_global_init(CURL_GLOBAL_DEFAULT);
+	curl_global_init(CURL_GLOBAL_DEFAULT | CURL_GLOBAL_ACK_EINTR);
 }
 
-guard::~guard()
+enable_library::~enable_library()
 {
 	curl_global_cleanup();
 }

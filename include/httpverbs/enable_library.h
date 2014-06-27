@@ -23,16 +23,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_GUARD_H
-#define HTTPVERBS_GUARD_H
+#ifndef HTTPVERBS_ENABLE_LIBRARY_H
+#define HTTPVERBS_ENABLE_LIBRARY_H
 
 namespace httpverbs
 {
 
-struct guard
+struct enable_library
 {
-	guard();
-	~guard();
+	enable_library();
+	~enable_library();
 };
 
 }

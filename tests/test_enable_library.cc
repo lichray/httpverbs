@@ -5,9 +5,9 @@
 
 #include <curl/curl.h>
 
-TEST_CASE("guard")
+TEST_CASE("enable_library")
 {
-	httpverbs::guard _;
+	httpverbs::enable_library _;
 
 	auto handle = curl_easy_init();
 	CHECK(handle);

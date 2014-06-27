@@ -26,7 +26,7 @@
 #ifndef HTTPVERBS_HTTPVERBS_H
 #define HTTPVERBS_HTTPVERBS_H
 
-#include "guard.h"
+#include "enable_library.h"
 
 namespace httpverbs
 {
