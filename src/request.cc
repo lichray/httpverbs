@@ -23,16 +23,50 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_HTTPVERBS_H
-#define HTTPVERBS_HTTPVERBS_H
+#include <httpverbs/request.h>
+#include <httpverbs/response.h>
+#include <httpverbs/exceptions.h>
 
-#include "enable_library.h"
-#include "request.h"
-#include "response.h"
+#include <curl/curl.h>
 
 namespace httpverbs
 {
 
+request::request(char const* method, std::string url) :
+	url(std::move(url)),
+	headers_(nullptr, curl_slist_free_all),
+	handle_(curl_easy_init(), curl_easy_cleanup)
+{
+	if (handle_ == nullptr)
+		throw bad_request();
+
+	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
+	curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method);
 }
 
-#endif
+void request::add_header(char const* name, char const* value)
+{
+	header_buffer_.assign(name).append(": ").append(value);
+	curl_slist_append(headers_.get(), header_buffer_.data());
+}
+
+response request::perform()
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
+
+	if (headers_ != nullptr)
+		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER,
+		    headers_.get());
+
+	auto r = curl_easy_perform(handle_.get());
+
+	if (r != CURLE_OK)
+		throw bad_response(r);
+
+	long http_code;
+	curl_easy_getinfo(handle_.get(), CURLINFO_RESPONSE_CODE, &http_code);
+
+	return response(int(http_code));
+}
+
+}

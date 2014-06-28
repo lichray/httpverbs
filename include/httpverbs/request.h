@@ -23,15 +23,48 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_HTTPVERBS_H
-#define HTTPVERBS_HTTPVERBS_H
+#ifndef HTTPVERBS_REQUEST_H
+#define HTTPVERBS_REQUEST_H
 
-#include "enable_library.h"
-#include "request.h"
-#include "response.h"
+#include <string>
+#include <memory>
+
+extern "C"
+{
+struct curl_slist;
+}
 
 namespace httpverbs
 {
+
+struct response;
+
+struct request
+{
+	std::string url;
+
+	request(char const* method, std::string url);
+
+	friend inline
+	bool operator==(request const& a, request const& b)
+	{
+		return a.handle_ == b.handle_;
+	}
+
+	friend inline
+	bool operator!=(request const& a, request const& b)
+	{
+		return !(a == b);
+	}
+
+	void add_header(char const* name, char const* value);
+	response perform();
+
+private:
+	std::string header_buffer_;
+	std::unique_ptr<curl_slist, void(&)(curl_slist*)> headers_;
+	std::unique_ptr<void, void(&)(void*)> handle_;
+};
 
 }
 
