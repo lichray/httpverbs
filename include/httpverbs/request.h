@@ -62,8 +62,8 @@ struct request
 
 private:
 	std::string header_buffer_;
-	std::unique_ptr<curl_slist, void(&)(curl_slist*)> headers_;
-	std::unique_ptr<void, void(&)(void*)> handle_;
+	std::unique_ptr<curl_slist, void(*)(curl_slist*)> headers_;
+	std::unique_ptr<void, void(*)(void*)> handle_;
 };
 
 }

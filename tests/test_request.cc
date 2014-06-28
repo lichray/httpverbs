@@ -24,6 +24,16 @@ SCENARIO("request can be moved", "[objects]")
 				REQUIRE(req.url.empty());
 			}
 		}
+
+		WHEN("it is moved from another request")
+		{
+			req = httpverbs::request("DELETE", "127.0.0.1");
+
+			THEN("it becomes that request")
+			{
+				REQUIRE(req.url == "127.0.0.1");
+			}
+		}
 	}
 }
 
