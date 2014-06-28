@@ -23,15 +23,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_HTTPVERBS_H
-#define HTTPVERBS_HTTPVERBS_H
-
-#include "enable_library.h"
-#include "response.h"
+#include <httpverbs/response.h>
 
 namespace httpverbs
 {
 
-}
+response::response(int status_code) :
+	status_code(status_code)
+{}
 
-#endif
+}

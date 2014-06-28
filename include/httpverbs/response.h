@@ -23,14 +23,45 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_HTTPVERBS_H
-#define HTTPVERBS_HTTPVERBS_H
+#ifndef HTTPVERBS_RESPONSE_H
+#define HTTPVERBS_RESPONSE_H
 
-#include "enable_library.h"
-#include "response.h"
+#include <string>
+#include <vector>
 
 namespace httpverbs
 {
+
+struct response
+{
+	std::string url;
+	std::string content;
+	int status_code;
+
+	explicit response(int status_code);
+
+	friend inline
+	bool operator==(response const& a, response const& b)
+	{
+		return a.url == b.url and
+		    a.content == b.content and
+		    a.status_code == b.status_code and
+		    a.headers_ == b.headers_;
+	}
+
+	friend inline
+	bool operator!=(response const& a, response const& b)
+	{
+		return !(a == b);
+	}
+
+	void raise_for_status() const;
+
+	std::string get_header(char const* name) const;
+
+private:
+	std::vector<std::string> headers_;
+};
 
 }
 
