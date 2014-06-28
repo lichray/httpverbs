@@ -38,7 +38,9 @@ struct response
 	std::string content;
 	int status_code;
 
-	explicit response(int status_code);
+	explicit response(int status_code) :
+		status_code(status_code)
+	{}
 
 	friend inline
 	bool operator==(response const& a, response const& b)

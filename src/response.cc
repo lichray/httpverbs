@@ -28,8 +28,4 @@
 namespace httpverbs
 {
 
-response::response(int status_code) :
-	status_code(status_code)
-{}
-
 }
