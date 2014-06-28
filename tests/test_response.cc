@@ -40,3 +40,12 @@ SCENARIO("response can be copied and moved", "[objects]")
 		}
 	}
 }
+
+TEST_CASE("response status", "[objects]")
+{
+	CHECK(httpverbs::response(100).ok());
+	CHECK(httpverbs::response(200).ok());
+	CHECK_FALSE(httpverbs::response(400).ok());
+	CHECK_FALSE(httpverbs::response(500).ok());
+	CHECK(httpverbs::response(600).ok());
+}

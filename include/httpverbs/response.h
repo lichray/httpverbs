@@ -57,7 +57,10 @@ struct response
 		return !(a == b);
 	}
 
-	void raise_for_status() const;
+	bool ok() const
+	{
+		return status_code < 400 or status_code >= 600;
+	}
 
 	std::string get_header(char const* name) const;
 
