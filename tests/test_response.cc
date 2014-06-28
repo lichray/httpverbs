@@ -4,17 +4,16 @@
 #include <httpverbs/httpverbs.h>
 
 httpverbs::enable_library _;
+char url[] = "http://localhost/";
 
 SCENARIO("response can be copied and moved", "[objects]")
 {
 	GIVEN("a response with a url")
 	{
 		auto resp = httpverbs::response(200);
-		resp.url = "http://localhost/";
+		resp.url = url;
 
 		REQUIRE(resp.status_code == 200);
-		REQUIRE(resp == resp);
-		REQUIRE(resp != httpverbs::response(200));
 
 		WHEN("a copy is created")
 		{
@@ -34,11 +33,27 @@ SCENARIO("response can be copied and moved", "[objects]")
 			THEN("that response replaces the given one")
 			{
 				REQUIRE(resp3.status_code == 200);
-				REQUIRE(resp3.url == "http://localhost/");
+				REQUIRE(resp3.url == url);
 				REQUIRE(resp.url.empty());
 			}
 		}
 	}
+}
+
+TEST_CASE("response comparison", "[objects]")
+{
+	auto resp1 = httpverbs::response(200);
+	auto resp2 = httpverbs::response(200);
+
+	REQUIRE(resp1 == resp1);
+	REQUIRE(resp2 == resp2);
+	REQUIRE(resp1 == resp2);
+
+	resp1.url = url;
+	REQUIRE(resp1 != resp2);
+
+	resp2.url = resp1.url;
+	REQUIRE(resp1 == resp2);
 }
 
 TEST_CASE("response status", "[objects]")
