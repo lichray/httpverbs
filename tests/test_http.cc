@@ -70,7 +70,7 @@ TEST_CASE("request with customized headers", "[objects][network]")
 	}
 }
 
-SCENARIO("request can send body", "[objects][network]")
+SCENARIO("request can send and receive body", "[objects][network]")
 {
 	auto k3 = host + "k3";
 	auto body = std::string("data with \0 inside", 18);
@@ -85,6 +85,15 @@ SCENARIO("request can send body", "[objects][network]")
 			auto resp = req.perform();
 
 			REQUIRE(resp.status_code == 201);
+
+			THEN("the value of the key is the given data")
+			{
+				req = httpverbs::request("GET", k3);
+				resp = req.perform();
+
+				REQUIRE(resp.status_code == 200);
+				REQUIRE(resp.content == body);
+			}
 		}
 	}
 }

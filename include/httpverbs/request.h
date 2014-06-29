@@ -63,9 +63,11 @@ struct request
 
 private:
 	void setup_request_body_from_data(void* p, size_t sz);
+	void setup_response_body_to_content(void* p);
 	void perform_on(response& resp);
 
 	static size_t read_string(char*, size_t, size_t, void*);
+	static size_t write_string(char*, size_t, size_t, void*);
 
 	struct _curl_slist_deleter
 	{

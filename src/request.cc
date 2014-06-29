@@ -70,6 +70,8 @@ response request::perform()
 	setup_request_body_from_data(&sv, sv.size());
 
 	response resp;
+	setup_response_body_to_content(&resp.content);
+
 	perform_on(resp);
 
 	return resp;
@@ -88,6 +90,12 @@ void request::setup_request_body_from_data(void* p, size_t sz)
 		curl_easy_setopt(handle_.get(), CURLOPT_READDATA, p);
 		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
 	}
+}
+
+void request::setup_response_body_to_content(void* p)
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, write_string);
+	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
 }
 
 void request::perform_on(response& resp)
@@ -116,6 +124,15 @@ size_t request::read_string(char* to, size_t sz, size_t nmemb, void* from)
 	sv.remove_prefix(copied_size);
 
 	return copied_size;
+}
+
+size_t request::write_string(char* from, size_t sz, size_t nmemb, void* to)
+{
+	auto& s = *reinterpret_cast<std::string*>(to);
+
+	s.append(from, sz * nmemb);
+
+	return sz * nmemb;
 }
 
 }
