@@ -44,3 +44,28 @@ SCENARIO("request can perform simple queries", "[objects][network]")
 		}
 	}
 }
+
+TEST_CASE("request with customized headers", "[objects][network]")
+{
+	auto k2 = host + "k2";
+
+	SECTION("send unaccepted content-type")
+	{
+		auto req = httpverbs::request("PUT", k2);
+		req.add_header("Content-Type", "text/html");
+
+		auto resp = req.perform();
+
+		REQUIRE(resp.status_code == 400);
+	}
+
+	SECTION("send accepted content-type")
+	{
+		auto req = httpverbs::request("PUT", k2);
+		req.add_header("Content-Type", "text/plain");
+
+		auto resp = req.perform();
+
+		REQUIRE(resp.status_code == 201);
+	}
+}

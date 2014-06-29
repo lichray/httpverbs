@@ -47,7 +47,8 @@ request::request(char const* method, std::string url) :
 void request::add_header(char const* name, char const* value)
 {
 	header_buffer_.assign(name).append(": ").append(value);
-	curl_slist_append(headers_.get(), header_buffer_.data());
+	headers_.reset(curl_slist_append(headers_.get(),
+	    header_buffer_.data()));
 }
 
 response request::perform()
