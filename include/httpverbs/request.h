@@ -63,7 +63,7 @@ struct request
 
 private:
 	void setup_request_body_from_data(void* p, size_t sz);
-	response perform_without_bodies();
+	void perform_on(response& resp);
 
 	static size_t read_string(char*, size_t, size_t, void*);
 

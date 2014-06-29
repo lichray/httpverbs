@@ -69,7 +69,10 @@ response request::perform()
 	stdex::string_view sv = data;
 	setup_request_body_from_data(&sv, sv.size());
 
-	return perform_without_bodies();
+	response resp;
+	perform_on(resp);
+
+	return resp;
 }
 
 void request::setup_request_body_from_data(void* p, size_t sz)
@@ -87,7 +90,7 @@ void request::setup_request_body_from_data(void* p, size_t sz)
 	}
 }
 
-response request::perform_without_bodies()
+void request::perform_on(response& resp)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
 
@@ -102,8 +105,7 @@ response request::perform_without_bodies()
 
 	long http_code;
 	curl_easy_getinfo(handle_.get(), CURLINFO_RESPONSE_CODE, &http_code);
-
-	return response(int(http_code));
+	resp.status_code = int(http_code);
 }
 
 size_t request::read_string(char* to, size_t sz, size_t nmemb, void* from)
