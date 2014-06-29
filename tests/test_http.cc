@@ -69,3 +69,22 @@ TEST_CASE("request with customized headers", "[objects][network]")
 		REQUIRE(resp.status_code == 201);
 	}
 }
+
+SCENARIO("request can send body", "[objects][network]")
+{
+	auto k3 = host + "k3";
+	auto body = std::string("data with \0 inside", 18);
+
+	GIVEN("a request with some data")
+	{
+		auto req = httpverbs::request("PUT", k3);
+		req.data = body;
+
+		WHEN("the key is created")
+		{
+			auto resp = req.perform();
+
+			REQUIRE(resp.status_code == 201);
+		}
+	}
+}

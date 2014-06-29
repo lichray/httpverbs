@@ -42,6 +42,7 @@ struct response;
 struct request
 {
 	std::string url;
+	std::string data;
 
 	request(char const* method, std::string url);
 
@@ -61,6 +62,11 @@ struct request
 	response perform();
 
 private:
+	void setup_request_body_from_data(void* p, size_t sz);
+	response perform_without_bodies();
+
+	static size_t read_string(char*, size_t, size_t, void*);
+
 	struct _curl_slist_deleter
 	{
 		void operator()(curl_slist*) const;
