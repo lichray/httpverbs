@@ -114,6 +114,10 @@ void request::perform_on(response& resp)
 	long http_code;
 	curl_easy_getinfo(handle_.get(), CURLINFO_RESPONSE_CODE, &http_code);
 	resp.status_code = int(http_code);
+
+	char* new_url;
+	curl_easy_getinfo(handle_.get(), CURLINFO_EFFECTIVE_URL, &new_url);
+	resp.url = new_url;
 }
 
 size_t request::read_string(char* to, size_t sz, size_t nmemb, void* from)

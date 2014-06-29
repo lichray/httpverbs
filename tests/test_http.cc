@@ -23,6 +23,11 @@ SCENARIO("request can perform simple queries", "[objects][network]")
 				REQUIRE(resp.status_code == 404);
 				REQUIRE_FALSE(resp.ok());
 			}
+
+			THEN("the url is no different from the request")
+			{
+				REQUIRE(resp.url == req.url);
+			}
 		}
 
 		WHEN("the key is touched")
