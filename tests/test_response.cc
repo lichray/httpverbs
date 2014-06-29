@@ -49,11 +49,18 @@ TEST_CASE("response comparison", "[objects]")
 	REQUIRE(resp2 == resp2);
 	REQUIRE(resp1 == resp2);
 
-	resp1.url = url;
-	REQUIRE(resp1 != resp2);
+	SECTION("not equal with different url")
+	{
+		resp1.url = url;
+		REQUIRE(resp1 != resp2);
+	}
 
-	resp2.url = resp1.url;
-	REQUIRE(resp1 == resp2);
+
+	SECTION("equal with same url")
+	{
+		resp2.url = resp1.url;
+		REQUIRE(resp1 == resp2);
+	}
 }
 
 TEST_CASE("response status", "[objects]")
