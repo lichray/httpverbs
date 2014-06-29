@@ -61,9 +61,19 @@ struct request
 	response perform();
 
 private:
+	struct _curl_slist_deleter
+	{
+		void operator()(curl_slist*) const;
+	};
+
+	struct _curl_handle_deleter
+	{
+		void operator()(void*) const;
+	};
+
 	std::string header_buffer_;
-	std::unique_ptr<curl_slist, void(*)(curl_slist*)> headers_;
-	std::unique_ptr<void, void(*)(void*)> handle_;
+	std::unique_ptr<curl_slist, _curl_slist_deleter> headers_;
+	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };
 
 }

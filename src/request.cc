@@ -32,10 +32,19 @@
 namespace httpverbs
 {
 
+void request::_curl_slist_deleter::operator()(curl_slist* p) const
+{
+	curl_slist_free_all(p);
+}
+
+void request::_curl_handle_deleter::operator()(void* p) const
+{
+	curl_easy_cleanup(p);
+}
+
 request::request(char const* method, std::string url) :
 	url(std::move(url)),
-	headers_(nullptr, curl_slist_free_all),
-	handle_(curl_easy_init(), curl_easy_cleanup)
+	handle_(curl_easy_init())
 {
 	if (handle_ == nullptr)
 		throw bad_request();
