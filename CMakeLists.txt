@@ -11,7 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 find_package(CURL REQUIRED)
 
 if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
 endif()
 
 include_directories(${CURL_INCLUDE_DIRS})

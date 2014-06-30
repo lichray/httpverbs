@@ -36,7 +36,7 @@ char const* bad_request::what() const NOEXCEPT
 }
 
 template <>
-bad_response::bad_response<CURLcode>(CURLcode ec) :
+bad_response::bad_response(CURLcode ec) :
 	std::runtime_error(curl_easy_strerror(ec))
 {}
 
