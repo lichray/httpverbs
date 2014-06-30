@@ -46,6 +46,9 @@ void request::_curl_handle_deleter::operator()(void* p) const
 	curl_easy_cleanup(p);
 }
 
+static size_t read_string(char*, size_t, size_t, void*);
+static size_t write_string(char*, size_t, size_t, void*);
+
 request::request(char const* method, std::string url) :
 	url(std::move(url)),
 	handle_(curl_easy_init())
@@ -120,7 +123,7 @@ void request::perform_on(response& resp)
 	resp.url = new_url;
 }
 
-size_t request::read_string(char* to, size_t sz, size_t nmemb, void* from)
+size_t read_string(char* to, size_t sz, size_t nmemb, void* from)
 {
 	auto& sv = *reinterpret_cast<stdex::string_view*>(from);
 
@@ -130,7 +133,7 @@ size_t request::read_string(char* to, size_t sz, size_t nmemb, void* from)
 	return copied_size;
 }
 
-size_t request::write_string(char* from, size_t sz, size_t nmemb, void* to)
+size_t write_string(char* from, size_t sz, size_t nmemb, void* to)
 {
 	auto& s = *reinterpret_cast<std::string*>(to);
 

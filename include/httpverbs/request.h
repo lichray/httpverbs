@@ -66,9 +66,6 @@ private:
 	void setup_response_body_to_string(void* p);
 	void perform_on(response& resp);
 
-	static size_t read_string(char*, size_t, size_t, void*);
-	static size_t write_string(char*, size_t, size_t, void*);
-
 	struct _curl_slist_deleter
 	{
 		void operator()(curl_slist*) const;
