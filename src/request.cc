@@ -67,17 +67,17 @@ void request::add_header(char const* name, char const* value)
 response request::perform()
 {
 	stdex::string_view sv = data;
-	setup_request_body_from_data(&sv, sv.size());
+	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
-	setup_response_body_to_content(&resp.content);
+	setup_response_body_to_string(&resp.content);
 
 	perform_on(resp);
 
 	return resp;
 }
 
-void request::setup_request_body_from_data(void* p, size_t sz)
+void request::setup_request_body_from_bytes(void* p, size_t sz)
 {
 	if (sz > std::numeric_limits<curl_off_t>::max())
 		throw std::length_error("request::data");
@@ -92,7 +92,7 @@ void request::setup_request_body_from_data(void* p, size_t sz)
 	}
 }
 
-void request::setup_response_body_to_content(void* p)
+void request::setup_response_body_to_string(void* p)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, write_string);
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
