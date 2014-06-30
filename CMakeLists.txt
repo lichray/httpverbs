@@ -9,12 +9,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
 find_package(CURL REQUIRED)
+find_package(Boost 1.48.0 REQUIRED)
 
 if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
 endif()
 
 include_directories(${CURL_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 include_directories(include)
 
 file(GLOB httpverbs_srcs src/*.cc)
