@@ -25,7 +25,66 @@
 
 #include <httpverbs/response.h>
 
+#include <algorithm>
+#include <strings.h>
+
 namespace httpverbs
 {
+
+namespace
+{
+
+struct header_comparator
+{
+	bool operator()(std::string const& header_line, char const* field_name)
+	{
+		auto pos = header_line.find(':');
+
+		// non-headers, if exist, are just collected at the
+		// beginning of the list
+		if (pos == std::string::npos)
+			return true;
+
+		return (strncasecmp(header_line.data(), field_name, pos) < 0);
+	}
+};
+
+}
+
+boost::optional<std::string> response::get_header(char const* name) const
+{
+	using R = boost::optional<std::string>;
+	using reversed = std::string::const_reverse_iterator;
+
+	// XXX not yet support duplicated field-names
+	auto it = std::lower_bound(begin(headers_), end(headers_), name,
+	    header_comparator());
+
+	if (it == end(headers_))
+		return boost::none;
+
+	auto& hl = *it;
+	auto pos = hl.find(':');
+
+	if (strncasecmp(hl.data(), name, pos) != 0)
+		return boost::none;
+
+	// it's libcurl's job to concatenate multi-line headers,
+	// so HTTP LWS actually means SP and HT here
+	auto is_LWS = [](char c)
+	{
+		return c == ' ' or c == '\t';
+	};
+
+	auto hl_b = begin(hl);
+	auto hl_e = end(hl);
+
+	// trim
+	auto fc_b = std::find_if_not(hl_b + pos + 1, hl_e, is_LWS);
+	auto fc_e = std::find_if_not(reversed(hl_e), reversed(fc_b + 1),
+	    is_LWS).base();
+
+	return R(boost::in_place(fc_b, fc_e));
+}
 
 }

@@ -26,6 +26,8 @@
 #ifndef HTTPVERBS_RESPONSE_H
 #define HTTPVERBS_RESPONSE_H
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
 
@@ -62,7 +64,7 @@ struct response
 		return status_code < 400 or status_code >= 600;
 	}
 
-	std::string get_header(char const* name) const;
+	boost::optional<std::string> get_header(char const* name) const;
 
 private:
 	friend struct request;

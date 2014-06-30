@@ -31,6 +31,8 @@
 
 #include <limits>
 #include <stdexcept>
+#include <algorithm>
+#include <strings.h>
 #include "stdex/string_view.h"
 
 namespace httpverbs
@@ -48,6 +50,19 @@ void request::_curl_handle_deleter::operator()(void* p) const
 
 static size_t read_string(char*, size_t, size_t, void*);
 static size_t write_string(char*, size_t, size_t, void*);
+static size_t fill_headers(char*, size_t, size_t, void*);
+
+namespace
+{
+
+struct headers_parser_stack
+{
+	bool done_status_line;
+	bool done_final_header_line;
+	std::vector<std::string>& ls;
+};
+
+}
 
 request::request(char const* method, std::string url) :
 	url(std::move(url)),
@@ -101,6 +116,12 @@ void request::setup_response_body_to_string(void* p)
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
 }
 
+void request::setup_sorted_response_headers(void* p)
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_HEADERFUNCTION, fill_headers);
+	curl_easy_setopt(handle_.get(), CURLOPT_HEADERDATA, p);
+}
+
 void request::perform_on(response& resp)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
@@ -108,6 +129,9 @@ void request::perform_on(response& resp)
 	if (headers_ != nullptr)
 		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER,
 		    headers_.get());
+
+	headers_parser_stack sk = { false, false, resp.headers_ };
+	setup_sorted_response_headers(&sk);
 
 	auto r = curl_easy_perform(handle_.get());
 
@@ -138,6 +162,46 @@ size_t write_string(char* from, size_t sz, size_t nmemb, void* to)
 	auto& s = *reinterpret_cast<std::string*>(to);
 
 	s.append(from, sz * nmemb);
+
+	return sz * nmemb;
+}
+
+size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
+{
+	auto& sk = *reinterpret_cast<headers_parser_stack*>(to);
+
+	if (sz * nmemb < 2)
+		throw std::logic_error("libcurl returns malformed header");
+
+	// skip the first line
+	if (not sk.done_status_line)
+	{
+		sk.done_status_line = true;
+	}
+	// skip the other embedded headers
+	else if (not sk.done_final_header_line)
+	{
+		auto size_without_CR_LF = sz * nmemb - 2;
+
+		if (size_without_CR_LF == 0)
+		{
+			sk.done_final_header_line = true;
+		}
+		else
+		{
+			// this guarantees the headers to be sorted until
+			// the first '\0'. Since field-name is not allowed
+			// to contain '\0', this also guarantees the field-
+			// names to be sorted.
+			auto it = std::lower_bound(begin(sk.ls), end(sk.ls),
+			    from, [](std::string const& a, char const* b)
+			    {
+				return (strcasecmp(a.data(), b) < 0);
+			    });
+
+			sk.ls.emplace(it, from, size_without_CR_LF);
+		}
+	}
 
 	return sz * nmemb;
 }

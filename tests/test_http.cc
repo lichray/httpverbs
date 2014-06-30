@@ -75,6 +75,43 @@ TEST_CASE("request with customized headers", "[objects][network]")
 	}
 }
 
+TEST_CASE("response receiving headers", "[objects][network]")
+{
+	auto resp = httpverbs::request("OPTIONS", host).perform();
+
+	REQUIRE(resp.status_code == 200);
+
+	SECTION("header not presented")
+	{
+		auto s = resp.get_header("content-type");
+
+		REQUIRE(s == boost::none);
+	}
+
+	SECTION("headers presented")
+	{
+		auto s1 = resp.get_header("server");
+		auto s2 = resp.get_header("date");
+
+		REQUIRE(s1 != boost::none);
+		REQUIRE_FALSE(s1.get().empty());
+
+		REQUIRE(s2 != boost::none);
+		REQUIRE_FALSE(s2.get().empty());
+	}
+
+	SECTION("header is case-insensitive")
+	{
+		auto s1 = resp.get_header("Allow");
+		auto s2 = resp.get_header("allow");
+		auto s3 = resp.get_header("aLLoW");
+
+		REQUIRE(s1 == std::string("GET, PUT, DELETE"));
+		REQUIRE(s2 == s1);
+		REQUIRE(s3 == s2);
+	}
+}
+
 SCENARIO("request can send and receive body", "[objects][network]")
 {
 	auto k3 = host + "k3";
