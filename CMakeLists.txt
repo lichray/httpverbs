@@ -11,6 +11,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 find_package(CURL REQUIRED)
 find_package(Boost 1.48.0 REQUIRED)
 
+if(BUILD_TESTING)
+	find_package(PythonInterp REQUIRED)
+	configure_file(tests/run_test_server.sh.in
+	    tests/run_test_server.sh @ONLY)
+endif()
+
 if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
 endif()
