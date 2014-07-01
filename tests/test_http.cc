@@ -85,7 +85,7 @@ TEST_CASE("response receiving headers", "[objects][network]")
 	{
 		auto s = resp.get_header("content-type");
 
-		REQUIRE(s == boost::none);
+		REQUIRE_FALSE(s);
 	}
 
 	SECTION("headers presented")
@@ -93,10 +93,10 @@ TEST_CASE("response receiving headers", "[objects][network]")
 		auto s1 = resp.get_header("server");
 		auto s2 = resp.get_header("date");
 
-		REQUIRE(s1 != boost::none);
+		REQUIRE(s1);
 		REQUIRE_FALSE(s1.get().empty());
 
-		REQUIRE(s2 != boost::none);
+		REQUIRE(s2);
 		REQUIRE_FALSE(s2.get().empty());
 	}
 
