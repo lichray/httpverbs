@@ -138,4 +138,23 @@ SCENARIO("request can send and receive body", "[objects][network]")
 			}
 		}
 	}
+
+	GIVEN("a request ignoring coming body")
+	{
+		auto req = httpverbs::request("GET", k3);
+		req.refuse_body();
+
+		WHEN("the query performed")
+		{
+			auto resp = req.perform();
+
+			REQUIRE(resp.status_code == 200);
+
+			THEN("body is received but discarded")
+			{
+				REQUIRE(resp.get_header("content-type"));
+				REQUIRE(resp.content.empty());
+			}
+		}
+	}
 }

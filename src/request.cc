@@ -82,6 +82,11 @@ void request::add_header(char const* name, char const* value)
 	    header_buffer_.data()));
 }
 
+void request::refuse_body()
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
+}
+
 response request::perform()
 {
 	stdex::string_view sv = data;

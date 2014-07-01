@@ -78,7 +78,10 @@ response delete_(std::string url)
 inline
 response head(std::string url)
 {
-	return request("HEAD", std::move(url)).perform();
+	auto req = request("HEAD", std::move(url));
+	req.refuse_body();
+
+	return req.perform();
 }
 
 inline

@@ -59,6 +59,7 @@ struct request
 	}
 
 	void add_header(char const* name, char const* value);
+	void refuse_body();
 	response perform();
 
 private:
