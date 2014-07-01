@@ -31,6 +31,8 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
+
 namespace httpverbs
 {
 

@@ -46,6 +46,18 @@ struct request
 
 	request(char const* method, std::string url);
 
+	request(request&& other);
+
+	request& operator=(request other)
+	{
+		swap(*this, other);
+
+		return *this;
+	}
+
+	friend
+	void swap(request& a, request& b);
+
 	friend inline
 	bool operator==(request const& a, request const& b)
 	{
@@ -63,6 +75,8 @@ struct request
 	response perform();
 
 private:
+	request(request const&);  // = delete
+
 	void setup_request_body_from_bytes(void* p, size_t sz);
 	void setup_response_body_to_string(void* p);
 	void setup_sorted_response_headers(void* p);

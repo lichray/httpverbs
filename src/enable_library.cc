@@ -34,7 +34,11 @@ namespace httpverbs
 
 enable_library::enable_library()
 {
-	auto r = curl_global_init(CURL_GLOBAL_DEFAULT | CURL_GLOBAL_ACK_EINTR);
+	auto r = curl_global_init(CURL_GLOBAL_DEFAULT
+#ifdef CURL_GLOBAL_ACK_EINTR
+	    | CURL_GLOBAL_ACK_EINTR
+#endif
+	    );
 
 	if (r != CURLE_OK)
 		throw std::runtime_error(curl_easy_strerror(r));

@@ -28,6 +28,7 @@
 
 #if defined(_MSC_VER)
 #define NOEXCEPT throw()
+#include <ciso646>
 #else
 #define NOEXCEPT noexcept
 #endif

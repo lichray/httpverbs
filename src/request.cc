@@ -76,6 +76,23 @@ request::request(char const* method, std::string url) :
 	curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method);
 }
 
+request::request(request&& other) :
+	url(std::move(other.url)),
+	data(std::move(other.data)),
+	headers_(std::move(other.headers_)),
+	handle_(std::move(other.handle_))
+{}
+
+void swap(request& a, request& b)
+{
+	using std::swap;
+
+	swap(a.url, b.url);
+	swap(a.data, b.data);
+	swap(a.headers_, b.headers_);
+	swap(a.handle_, b.handle_);
+}
+
 void request::add_header(char const* name, char const* value)
 {
 	header_buffer_.assign(name).append(": ").append(value);

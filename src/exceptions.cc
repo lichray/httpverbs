@@ -50,8 +50,4 @@ bad_response::bad_response(CURLSHcode ec) :
 	std::runtime_error(curl_share_strerror(ec))
 {}
 
-template bad_response::bad_response(CURLcode);
-template bad_response::bad_response(CURLMcode);
-template bad_response::bad_response(CURLSHcode);
-
 }

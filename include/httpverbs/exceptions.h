@@ -26,9 +26,9 @@
 #ifndef HTTPVERBS_EXCEPTIONS_H
 #define HTTPVERBS_EXCEPTIONS_H
 
-#include "config.h"
-
 #include <stdexcept>
+
+#include "config.h"
 
 namespace httpverbs
 {
