@@ -28,6 +28,7 @@
 
 #if defined(_MSC_VER)
 #define NOEXCEPT throw()
+#define NOMINMAX
 #include <ciso646>
 #else
 #define NOEXCEPT noexcept

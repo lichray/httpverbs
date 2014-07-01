@@ -53,8 +53,8 @@ struct header_comparator
 
 boost::optional<std::string> response::get_header(char const* name) const
 {
-	using R = boost::optional<std::string>;
-	using reversed = std::string::const_reverse_iterator;
+	typedef boost::optional<std::string>		R;
+	typedef std::string::const_reverse_iterator	reversed;
 
 	// XXX not yet support duplicated field-names
 	auto it = std::lower_bound(begin(headers_), end(headers_), name,

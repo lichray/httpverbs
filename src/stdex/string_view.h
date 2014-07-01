@@ -37,20 +37,25 @@
 #define constexpr
 #if defined(_MSC_VER)
 #define noexcept throw()
+# if _MSC_VER < 1800
+# define _YOU_JUST_CANNOT_USE_ANYTHING
+# endif
 #endif
 
 namespace stdex {
 
 namespace detail {
 
+#if !defined(_YOU_JUST_CANNOT_USE_ANYTHING)
 template <typename Container>
-#if defined(_LIBCPP_VERSION) && 0
+# if defined(_LIBCPP_VERSION) && 0
 using iter = std::__wrap_iter<typename Container::const_pointer>;
-#elif defined(__GLIBCXX__)
+# elif defined(__GLIBCXX__)
 using iter = __gnu_cxx::__normal_iterator
 	<typename Container::const_pointer, Container>;
-#else
+# else
 using iter = typename Container::const_pointer;
+# endif
 #endif
 
 }
@@ -60,20 +65,24 @@ using namespace std::placeholders;
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 struct basic_string_view
 {
-	using traits_type = Traits;
-	using value_type = typename Traits::char_type;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
+	typedef Traits				traits_type;
+	typedef typename Traits::char_type	value_type;
+	typedef std::size_t			size_type;
+	typedef std::ptrdiff_t			difference_type;
 
-	using pointer = value_type*;
-	using const_pointer = value_type const*;
-	using reference = value_type&;
-	using const_reference = value_type const&;
+	typedef value_type*			pointer;
+	typedef value_type const*		const_pointer;
+	typedef value_type&			reference;
+	typedef value_type const&		const_reference;
 
-	using iterator = detail::iter<basic_string_view>;
-	using const_iterator = iterator;
-	using reverse_iterator = std::reverse_iterator<iterator>;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+#if !defined(_YOU_JUST_CANNOT_USE_ANYTHING)
+	typedef detail::iter<basic_string_view>	iterator;
+#else
+	typedef char const*			iterator;
+#endif
+	typedef iterator			const_iterator;
+	typedef std::reverse_iterator<iterator>	reverse_iterator;
+	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	static const auto npos = size_type(-1);
 
@@ -84,11 +93,11 @@ struct basic_string_view
 	template <typename Allocator>
 	basic_string_view(std::basic_string
 	    <CharT, Traits, Allocator> const& str) noexcept
-		: basic_string_view(str.data(), str.size())
+		: it_(str.data()), sz_(str.size())
 	{}
 
 	basic_string_view(CharT const* str)
-		: basic_string_view(str, traits_type::length(str))
+		: it_(str), sz_(traits_type::length(str))
 	{}
 
 	constexpr basic_string_view(CharT const* str, size_type len)
@@ -208,6 +217,8 @@ struct basic_string_view
 		std::swap(sz_, sv.sz_);
 	}
 
+#if !defined(_YOU_JUST_CANNOT_USE_ANYTHING)
+
 	template <typename Allocator>
 	explicit operator std::basic_string<CharT, Traits, Allocator>() const
 	{
@@ -215,7 +226,14 @@ struct basic_string_view
 		    data(), size());
 	}
 
-	template <typename Allocator = std::allocator<CharT>>
+#endif
+
+	std::basic_string<CharT, Traits> to_string() const
+	{
+		return std::basic_string<CharT, Traits>(data(), size());
+	}
+
+	template <typename Allocator>
 	std::basic_string<CharT, Traits, Allocator> to_string(
 	    Allocator const& a = Allocator()) const
 	{
@@ -230,7 +248,12 @@ struct basic_string_view
 
 		auto rlen = std::min(n, size() - pos);
 
+#if !defined(_MSC_VER)
 		std::copy_n(begin() + pos, rlen, s);
+#else
+		std::copy_n(begin() + pos, rlen,
+		    stdext::make_unchecked_array_iterator(s));
+#endif
 		return rlen;
 	}
 
@@ -388,10 +411,10 @@ void swap(basic_string_view<CharT, Traits>& a,
 	a.swap(b);
 }
 
-using string_view = basic_string_view<char>;
-using wstring_view = basic_string_view<wchar_t>;
-using u16string_view = basic_string_view<char16_t>;
-using u32string_view = basic_string_view<char32_t>;
+typedef basic_string_view<char>		string_view;
+typedef basic_string_view<wchar_t>	wstring_view;
+typedef basic_string_view<char16_t>	u16string_view;
+typedef basic_string_view<char32_t>	u32string_view;
 
 }
 

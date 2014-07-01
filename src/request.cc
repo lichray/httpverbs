@@ -223,7 +223,12 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 				return (strcasecmp(a.data(), b) < 0);
 			    });
 
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
 			sk.ls.emplace(it, from, size_without_CR_LF);
+#else
+			sk.ls.insert(it, std::string(from,
+			    size_without_CR_LF));
+#endif
 		}
 	}
 
