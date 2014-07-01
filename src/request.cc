@@ -29,6 +29,7 @@
 
 #include <curl/curl.h>
 
+#include <type_traits>
 #include <limits>
 #include <stdexcept>
 #include <algorithm>
@@ -102,7 +103,8 @@ response request::perform()
 
 void request::setup_request_body_from_bytes(void* p, size_t sz)
 {
-	if (sz > std::numeric_limits<curl_off_t>::max())
+	if (sz > std::make_unsigned<curl_off_t>::type(
+	    std::numeric_limits<curl_off_t>::max()))
 		throw std::length_error("request::data");
 
 	if (sz != 0)
