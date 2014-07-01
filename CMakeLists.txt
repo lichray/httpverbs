@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-project(httpverbs CXX)
+project(httpverbs)
 enable_testing()
 
 include(CTest)
+include(CheckIncludeFiles)
+include(CheckFunctionExists)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
@@ -10,6 +12,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
 find_package(CURL REQUIRED)
 find_package(Boost 1.48.0 REQUIRED)
+
+CHECK_INCLUDE_FILES(strings.h HAVE_STRINGS_H)
+CHECK_FUNCTION_EXISTS(_stricmp HAVE__STRICMP)
+configure_file(src/config.h.in include/httpverbs/config.h)
 
 if(BUILD_TESTING)
 	find_package(PythonInterp REQUIRED)

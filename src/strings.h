@@ -23,14 +23,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_CONFIG_H
-#define HTTPVERBS_CONFIG_H
+#ifndef _HTTPVERBS_STRINGS_H
+#define _HTTPVERBS_STRINGS_H
 
-#if defined(_MSC_VER)
-#define NOEXCEPT throw()
-#include <ciso646>
+#include <httpverbs/config.h>
+
+#if defined(HAVE_STRINGS_H)
+#include <strings.h>
 #else
-#define NOEXCEPT noexcept
+#include <string.h>
+# if defined(HAVE__STRICMP)
+# define strcasecmp	_stricmp
+# define strncasecmp	_strnicmp
+# endif
 #endif
 
 #endif

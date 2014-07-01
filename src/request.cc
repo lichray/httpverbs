@@ -33,7 +33,7 @@
 #include <limits>
 #include <stdexcept>
 #include <algorithm>
-#include <strings.h>
+#include "strings.h"
 #include "stdex/string_view.h"
 
 namespace httpverbs

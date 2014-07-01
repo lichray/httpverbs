@@ -8,6 +8,7 @@ Makefile
 /*.cmake
 CMakeCache.txt
 CMakeFiles/
+config.h
 tests/run_test_server.sh
 
 # ctest
