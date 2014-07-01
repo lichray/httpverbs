@@ -25,6 +25,19 @@ endif()
 
 if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
+else()
+	foreach(libvar CURL_LIBRARIES)
+		if(${libvar} MATCHES "curl.*\\.lib$")
+			add_definitions(-DCURL_STATICLIB)
+			break()
+		endif()
+	endforeach()
+
+	foreach(flagvar CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+	    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+		string(REGEX REPLACE "/MD" "/MT" ${flagvar} "${${flagvar}}")
+		string(REGEX REPLACE "/MDd" "/MTd" ${flagvar} "${${flagvar}}")
+	endforeach()
 endif()
 
 include_directories(${CURL_INCLUDE_DIRS})
