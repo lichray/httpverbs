@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+try:
+    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
+except ImportError:
+    from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 class StoreHandler(BaseHTTPRequestHandler):
@@ -12,12 +16,15 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.send_response(200)
 
             self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Length", len(s))
             self.end_headers()
 
             self.wfile.write(s)
 
         except KeyError:
             self.send_response(404)
+            self.send_header("Content-Length", 0)
+            self.end_headers()
 
     def do_HEAD(self):
         if self.path[1:] in self.__db:
@@ -26,18 +33,25 @@ class StoreHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
 
+        self.send_header("Content-Length", 0)
+        self.end_headers()
+
     def do_PUT(self):
-        ctp = self.headers.getheader('content-type')
+        ctp = self.headers.get('content-type')
 
         if ctp is not None and ctp != "text/plain":
             self.send_response(400)
+            self.send_header("Content-Length", 0)
+            self.end_headers()
             return
 
-        sz = self.headers.getheader('content-length')
+        sz = self.headers.get('content-length')
 
         self.__db[self.path[1:]] = self.rfile.read(int(sz) if sz is not None
                                                    else 0)
         self.send_response(201)
+        self.send_header("Content-Length", 0)
+        self.end_headers()
 
     def do_DELETE(self):
         try:
@@ -47,6 +61,8 @@ class StoreHandler(BaseHTTPRequestHandler):
             pass
 
         self.send_response(204)
+        self.send_header("Content-Length", 0)
+        self.end_headers()
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -61,6 +77,7 @@ class StoreHandler(BaseHTTPRequestHandler):
 
     def __set_allowed(self):
         self.send_header("Allow", "GET, PUT, DELETE")
+        self.send_header("Content-Length", 0)
         self.end_headers()
 
 
