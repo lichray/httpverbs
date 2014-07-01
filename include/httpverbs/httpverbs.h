@@ -33,6 +33,75 @@
 namespace httpverbs
 {
 
+inline
+response get(std::string url)
+{
+	return request("GET", std::move(url)).perform();
+}
+
+inline
+response put(std::string url)
+{
+	return request("PUT", std::move(url)).perform();
+}
+
+inline
+response put(std::string url, std::string data)
+{
+	auto req = request("PUT", std::move(url));
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
+inline
+response post(std::string url)
+{
+	return request("POST", std::move(url)).perform();
+}
+
+inline
+response post(std::string url, std::string data)
+{
+	auto req = request("POST", std::move(url));
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
+inline
+response delete_(std::string url)
+{
+	return request("DELETE", std::move(url)).perform();
+}
+
+inline
+response head(std::string url)
+{
+	return request("HEAD", std::move(url)).perform();
+}
+
+inline
+response options(std::string url)
+{
+	return request("OPTIONS", std::move(url)).perform();
+}
+
+inline
+response patch(std::string url)
+{
+	return request("PATCH", std::move(url)).perform();
+}
+
+inline
+response patch(std::string url, std::string data)
+{
+	auto req = request("PATCH", std::move(url));
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
 }
 
 #endif
