@@ -2,16 +2,27 @@
 *~
 .*.swp
 
+# generated files
+config.h
+tests/run_test_server.sh
+
 # cmake
 build/
 Makefile
 /*.cmake
 CMakeCache.txt
 CMakeFiles/
-config.h
-tests/run_test_server.sh
 
 # ctest
 *.log
 Testing/
 DartConfiguration.tcl
+
+# Visual Studio
+/*.vcxproj
+/*.vcxproj.filters
+/*.vcxproj.user
+/*.dir/
+/*.sln
+/*.suo
+/*.sdf
