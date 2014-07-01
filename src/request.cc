@@ -130,7 +130,8 @@ void request::setup_request_body_from_bytes(void* p, size_t sz)
 		curl_easy_setopt(handle_.get(), CURLOPT_READFUNCTION,
 		    read_string);
 		curl_easy_setopt(handle_.get(), CURLOPT_READDATA, p);
-		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
+		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE,
+		    curl_off_t(sz));
 	}
 }
 
