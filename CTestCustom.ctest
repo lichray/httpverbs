@@ -1,4 +1,4 @@
-set(CTEST_CUSTOM_PRE_TEST tests/run_test_server.sh)
-set(CTEST_CUSTOM_POST_TEST tests/stop_test_server.sh)
+set(CTEST_CUSTOM_PRE_TEST tests/run_test_server)
+set(CTEST_CUSTOM_POST_TEST tests/stop_test_server)
 set(CTEST_CUSTOM_PRE_MEMCHECK ${CTEST_CUSTOM_PRE_TEST})
 set(CTEST_CUSTOM_POST_MEMCHECK ${CTEST_CUSTOM_POST_TEST})

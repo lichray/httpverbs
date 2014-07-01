@@ -19,8 +19,8 @@ configure_file(src/config.h.in include/httpverbs/config.h)
 
 if(BUILD_TESTING)
 	find_package(PythonInterp REQUIRED)
-	configure_file(tests/run_test_server.sh.in
-	    tests/run_test_server.sh @ONLY)
+	configure_file(tests/run_test_server.in
+	    tests/run_test_server @ONLY)
 endif()
 
 if(NOT MSVC)

@@ -4,7 +4,7 @@
 
 # generated files
 config.h
-tests/run_test_server.sh
+tests/run_test_server
 
 # cmake
 build/
