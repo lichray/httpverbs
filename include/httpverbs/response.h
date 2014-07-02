@@ -46,6 +46,27 @@ struct response
 		status_code(status_code)
 	{}
 
+#if defined(_MSC_VER) && _MSC_VER < 1800
+
+	response(response&& other) :
+		url(std::move(other.url)),
+		content(std::move(other.content)),
+		status_code(std::move(other.status_code)),
+		headers_(std::move(other.headers_))
+	{}
+
+	response& operator=(response&& other)
+	{
+		url = std::move(other.url);
+		content = std::move(other.content);
+		status_code = std::move(other.status_code);
+		headers_ = std::move(other.headers_);
+
+		return *this;
+	}
+
+#endif
+
 	friend inline
 	bool operator==(response const& a, response const& b)
 	{

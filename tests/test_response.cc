@@ -35,9 +35,8 @@ SCENARIO("response can be copied and moved", "[objects]")
 				REQUIRE(resp3.status_code == 200);
 				REQUIRE(resp3.url == url);
 
-				// VC10 has problem generating move ctor,
-				// but this is not an legal test anyway
-				//REQUIRE(resp.url.empty());
+				// XXX illegal test
+				REQUIRE(resp.url.empty());
 			}
 		}
 	}
