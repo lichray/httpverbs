@@ -5,6 +5,7 @@
 # generated files
 config.h
 tests/run_test_server
+tests/run_test_server.bat
 
 # cmake
 build/

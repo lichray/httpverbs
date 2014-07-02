@@ -1,0 +1,13 @@
+@echo off
+
+for /F "usebackq tokens=1,2 delims=;=	 " %%i in (
+    `wmic process call create ^
+     "cmd.exe /C ${PYTHON_CMD} ""%~dp0test_server.py""
+     ^> test_server.log 2^>^&1"^, "%cd%"`
+) do (
+    if /I "%%i" EQU "ProcessId" (
+        echo %%j > test_server.pid
+    )
+)
+ping 1.1.1.1 -n 1 -w 500 > nul
+exit /B 0

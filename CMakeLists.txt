@@ -19,8 +19,24 @@ configure_file(src/config.h.in include/httpverbs/config.h)
 
 if(BUILD_TESTING)
 	find_package(PythonInterp REQUIRED)
+	file(TO_NATIVE_PATH ${PYTHON_EXECUTABLE} PYTHON_CMD)
 	configure_file(tests/run_test_server.in
 	    tests/run_test_server @ONLY)
+	configure_file(tests/run_test_server.bat.in
+	    tests/run_test_server.bat)
+
+	if(NOT WIN32)
+		get_filename_component(START_SCRIPT_PATH
+		    tests/run_test_server ABSOLUTE)
+		get_filename_component(STOP_SCRIPT_PATH
+		    tests/stop_test_server ABSOLUTE)
+	else()
+		get_filename_component(START_SCRIPT_PATH
+		    tests/run_test_server.bat ABSOLUTE)
+		get_filename_component(STOP_SCRIPT_PATH
+		    tests/stop_test_server.bat ABSOLUTE)
+	endif()
+	configure_file(CTestCustom.cmake.in CTestCustom.cmake @ONLY)
 endif()
 
 if(NOT MSVC)
