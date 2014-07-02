@@ -46,17 +46,18 @@ namespace stdex {
 
 namespace detail {
 
-#if !defined(_YOU_JUST_CANNOT_USE_ANYTHING)
 template <typename Container>
-# if defined(_LIBCPP_VERSION) && 0
-using iter = std::__wrap_iter<typename Container::const_pointer>;
-# elif defined(__GLIBCXX__)
-using iter = __gnu_cxx::__normal_iterator
-	<typename Container::const_pointer, Container>;
-# else
-using iter = typename Container::const_pointer;
-# endif
+struct iter
+{
+#if defined(_LIBCPP_VERSION) && 0
+	typedef std::__wrap_iter<typename Container::const_pointer> type;
+#elif defined(__GLIBCXX__)
+	typedef __gnu_cxx::__normal_iterator
+	    <typename Container::const_pointer, Container> type;
+#else
+	typedef typename Container::const_pointer type;
 #endif
+};
 
 }
 
@@ -75,11 +76,7 @@ struct basic_string_view
 	typedef value_type&			reference;
 	typedef value_type const&		const_reference;
 
-#if !defined(_YOU_JUST_CANNOT_USE_ANYTHING)
-	typedef detail::iter<basic_string_view>	iterator;
-#else
-	typedef char const*			iterator;
-#endif
+	typedef typename detail::iter<basic_string_view>::type iterator;
 	typedef iterator			const_iterator;
 	typedef std::reverse_iterator<iterator>	reverse_iterator;
 	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
