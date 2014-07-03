@@ -3,5 +3,13 @@ set -e
 
 @PYTHON_EXECUTABLE@ "$(dirname $0)/test_server.py" > test_server.log 2>&1 &
 saved_pid=$!
-sleep 0.5
+
+if [ "x$TRAVIS" = "x" ]; then
+  sleep 0.5
+else
+  for i in $(seq 60); do
+    curl -Ss localhost:8080 && break
+    sleep 1
+  done
+fi
 echo "${saved_pid}" > test_server.pid

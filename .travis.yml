@@ -13,5 +13,5 @@ script:
 after_failure:
   - cat test_server.log
   - tests/run_test_server
-  - find tests -name 'test_*' -perm -u=x | while read t; do "$t"; done
+  - for t in tests/test_*.cc; do "${t%.cc}"; done
   - tests/stop_test_server
