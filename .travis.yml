@@ -4,9 +4,14 @@ compiler:
   - clang
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libcurl4-openssl-dev
-  - sudo apt-get install -qq libboost-dev
-script:
+  - sudo apt-get install -qq libcurl4-openssl-dev libboost-dev
+before_script:
   - cmake .
+script:
   - make
   - make test
+after_failure:
+  - cat test_server.log
+  - tests/run_test_server
+  - find tests -name 'test_*' -perm -u=x | while read t; do "$t"; done
+  - tests/stop_test_server
