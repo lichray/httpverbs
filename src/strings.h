@@ -28,14 +28,26 @@
 
 #include <httpverbs/config.h>
 
+#include <string.h>
+
 #if defined(HAVE_STRINGS_H)
 #include <strings.h>
 #else
-#include <string.h>
 # if defined(HAVE__STRICMP)
 # define strcasecmp	_stricmp
 # define strncasecmp	_strnicmp
 # endif
 #endif
+
+namespace httpverbs
+{
+
+inline
+char* _mscpy(char* __restrict dst, char const* __restrict src, size_t len)
+{
+	return reinterpret_cast<char*>(memcpy(dst, src, len)) + len;
+}
+
+}
 
 #endif

@@ -82,6 +82,15 @@ private:
 	void setup_sorted_response_headers(void* p);
 	void perform_on(response& resp);
 
+	template <size_t N>
+	char* try_local_buffer(char (&)[N], size_t);
+	void add_curl_header(char const* line);
+
+	struct _char_deleter
+	{
+		void operator()(char* p) const;
+	};
+
 	struct _curl_slist_deleter
 	{
 		void operator()(curl_slist*) const;
@@ -92,7 +101,7 @@ private:
 		void operator()(void*) const;
 	};
 
-	std::string header_buffer_;
+	std::unique_ptr<char, _char_deleter> header_buffer_;
 	std::unique_ptr<curl_slist, _curl_slist_deleter> headers_;
 	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };

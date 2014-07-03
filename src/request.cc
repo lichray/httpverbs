@@ -31,6 +31,8 @@
 
 #include <type_traits>
 #include <limits>
+#include <stdlib.h>
+#include <new>
 #include <stdexcept>
 #include <algorithm>
 #include "strings.h"
@@ -38,6 +40,11 @@
 
 namespace httpverbs
 {
+
+void request::_char_deleter::operator()(char* p) const
+{
+	free(p);
+}
 
 void request::_curl_slist_deleter::operator()(curl_slist* p) const
 {
@@ -95,9 +102,28 @@ void swap(request& a, request& b)
 
 void request::add_header(char const* name, char const* value)
 {
-	header_buffer_.assign(name).append(": ").append(value);
-	headers_.reset(curl_slist_append(headers_.get(),
-	    header_buffer_.data()));
+	char buf[128];
+	auto nv = strlen(name);
+	auto lv = strlen(value);
+	char* p;
+
+	if (lv > 0)
+	{
+		p = try_local_buffer(buf, nv + lv + 3);
+		_mscpy(_mscpy(_mscpy(p, name, nv), ": ", 2), value, lv + 1);
+	}
+	else
+	{
+		p = try_local_buffer(buf, nv + 2);
+		_mscpy(_mscpy(p, name, nv), ";", 2);
+	}
+
+	add_curl_header(p);
+}
+
+void request::add_curl_header(char const* line)
+{
+	headers_.reset(curl_slist_append(headers_.get(), line));
 }
 
 void request::refuse_body()
@@ -170,6 +196,28 @@ void request::perform_on(response& resp)
 	char* new_url;
 	curl_easy_getinfo(handle_.get(), CURLINFO_EFFECTIVE_URL, &new_url);
 	resp.url = new_url;
+}
+
+template <size_t N>
+char* request::try_local_buffer(char (&arr)[N], size_t sz)
+{
+	if (sz <= N)
+		return arr;
+	else
+	{
+		// reallocf(3)
+		auto oldp = header_buffer_.release();
+		header_buffer_.reset(
+		    reinterpret_cast<char*>(realloc(oldp, sz)));
+
+		if (header_buffer_.get() == nullptr)
+		{
+			free(oldp);
+			throw std::bad_alloc();
+		}
+
+		return header_buffer_.get();
+	}
 }
 
 size_t read_string(char* to, size_t sz, size_t nmemb, void* from)
