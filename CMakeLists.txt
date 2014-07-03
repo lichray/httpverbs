@@ -74,3 +74,9 @@ if(BUILD_TESTING)
 		add_test(${test_suite} tests/${test_suite})
 	endforeach()
 endif()
+
+file(GLOB httpverbs_hdrs include/httpverbs/*.h)
+
+install(FILES ${httpverbs_hdrs} DESTINATION include/httpverbs)
+install(TARGETS httpverbs EXPORT httpverbs-targets ARCHIVE DESTINATION lib)
+install(EXPORT httpverbs-targets DESTINATION lib/cmake/httpverbs)
