@@ -123,7 +123,7 @@ void request::add_header(char const* name, char const* value)
 
 void request::add_curl_header(char const* line)
 {
-	headers_.reset(curl_slist_append(headers_.get(), line));
+	headers_.reset(curl_slist_append(headers_.release(), line));
 }
 
 void request::refuse_body()

@@ -85,6 +85,11 @@ class StoreHandler(BaseHTTPRequestHandler):
         sz = int(content_length) if content_length is not None else 0
 
         self.send_response(200)
+
+        for h in self.headers.headers:
+            if h[:2].lower() == "x-":
+                self.wfile.write(h)
+
         self.send_header("Content-Length", sz)
         self.end_headers()
 
