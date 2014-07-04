@@ -81,7 +81,7 @@ boost::optional<std::string> response::get_header(char const* name) const
 
 	// trim
 	auto fc_b = std::find_if_not(hl_b + pos + 1, hl_e, is_LWS);
-	auto fc_e = std::find_if_not(reversed(hl_e), reversed(fc_b + 1),
+	auto fc_e = std::find_if_not(reversed(hl_e), reversed(fc_b),
 	    is_LWS).base();
 
 	return R(boost::in_place(fc_b, fc_e));

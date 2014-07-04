@@ -111,14 +111,16 @@ void request::add_header(char const* name, char const* value)
 	{
 		p = try_local_buffer(buf, nv + lv + 3);
 		_mscpy(_mscpy(_mscpy(p, name, nv), ": ", 2), value, lv + 1);
+		add_curl_header(p);
 	}
-	else
+#if LIBCURL_VERSION_NUM >= 0x071700
+	else  // empty header support in 7.23.0
 	{
 		p = try_local_buffer(buf, nv + 2);
 		_mscpy(_mscpy(p, name, nv), ";", 2);
+		add_curl_header(p);
 	}
-
-	add_curl_header(p);
+#endif
 }
 
 void request::add_curl_header(char const* line)
