@@ -2,14 +2,12 @@ language: cpp
 compiler:
   - gcc
   - clang
-install:
+before_install:
   - sudo apt-get update -qq
+install:
   - sudo apt-get install -qq libcurl4-openssl-dev libboost-dev
-before_script:
-  - cmake .
 script:
-  - make
-  - make test
+  - cmake . && make && make test
 after_failure:
   - cat test_server.log
   - tests/run_test_server
