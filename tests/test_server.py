@@ -80,6 +80,20 @@ class StoreHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", 0)
         self.end_headers()
 
+    def do_ECHO(self):
+        content_length = self.headers.get('content-length')
+        sz = int(content_length) if content_length is not None else 0
+
+        self.send_response(200)
+        self.send_header("Content-Length", sz)
+        self.end_headers()
+
+        while sz > 4096:
+            self.wfile.write(self.rfile.read(4096))
+            sz -= 4096
+
+        self.wfile.write(self.rfile.read(sz))
+
 
 def main():
     port = 8080
