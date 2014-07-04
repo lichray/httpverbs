@@ -13,28 +13,16 @@ std::string host = "http://localhost:8080/";
 
 TEST_CASE("string to string body r/w", "[network][mass]")
 {
-	SECTION("small amount")
-	{
-		auto req = httpverbs::request("ECHO", host);
-		req.data = "fly me to the moon";
-		auto resp = req.perform();
+	auto req = httpverbs::request("ECHO", host);
 
-		CHECK(resp.content == req.data);
+	for (int i = 0; i < 500; ++i)
+	{
+		auto arr = get_random_block();
+		req.data.append(reinterpret_cast<char const*>(
+		    arr.data()), arr.size() * sizeof(arr[0]));
 	}
 
-	SECTION("large amount")
-	{
-		auto req = httpverbs::request("ECHO", host);
+	auto resp = req.perform();
 
-		for (int i = 0; i < 1024; ++i)
-		{
-			auto arr = get_random_block();
-			req.data.append(reinterpret_cast<char const*>(
-			    arr.data()), arr.size() * sizeof(arr[0]));
-		}
-
-		auto resp = req.perform();
-
-		CHECK(resp.content == req.data);
-	}
+	CHECK(resp.content == req.data);
 }

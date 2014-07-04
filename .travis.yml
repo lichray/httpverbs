@@ -7,7 +7,7 @@ before_install:
 install:
   - sudo apt-get install -qq libcurl4-openssl-dev libboost-dev
 script:
-  - cmake . && make && make test
+  - cmake . && make -j4 && make test ARGS=-j4
 after_failure:
   - cat test_server.log
   - tests/run_test_server
