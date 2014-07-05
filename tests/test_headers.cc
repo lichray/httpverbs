@@ -52,16 +52,14 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 	auto req = httpverbs::request("ECHO", host);
 
 	std::unordered_map<std::string, int> m;
-	std::string buf = "x-";
 
 	for (int i = 1; i < 40; ++i)
 	{
 		bool inserted;
 		decltype(begin(m)) it;
 
-		append_random_text(buf, 10);
-		std::tie(it, inserted) = m.insert(std::make_pair(buf, i));
-		buf.erase(2);
+		std::tie(it, inserted) = m.insert(std::make_pair(
+		    "x-" + get_random_text(10), i));
 
 		if (inserted)
 		{

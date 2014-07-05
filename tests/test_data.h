@@ -7,21 +7,14 @@
 static auto e = std::mt19937(std::random_device()());
 
 inline
-auto get_random_block()
-	-> std::array
-	<
-	    std::mt19937::result_type,
-	    4096 / sizeof(std::mt19937::result_type)
-	>
+auto get_random_block() -> std::array<char, 4096>
 {
-	std::array
-	<
-	    std::mt19937::result_type,
-	    4096 / sizeof(std::mt19937::result_type)
-	>
-	arr;
+	std::array<char, 4096> arr;
 
-	std::generate(begin(arr), end(arr), e);
+	auto be = reinterpret_cast<std::mt19937::result_type*>(&*begin(arr));
+	auto ed = reinterpret_cast<std::mt19937::result_type*>(&*end(arr));
+
+	std::generate(be, ed, e);
 
 	return arr;
 }
@@ -50,14 +43,20 @@ OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first,
 	return d_first;
 }
 
-void append_random_text(std::string& to, size_t maxlen, std::string from =
+inline
+auto get_random_text(size_t maxlen, std::string const& from =
     "-0123456789abcdefghijklmnopqrstuvwxyz")
+	-> std::string
 {
 	typedef std::uniform_int_distribution<size_t>	dist_t;
 	typedef typename dist_t::param_type		param_t;
 
 	static dist_t d;
 
+	std::string to;
+
 	auto l = d(e, param_t(1, maxlen));
 	sample(begin(from), end(from), std::back_inserter(to), l, e);
+
+	return to;
 }

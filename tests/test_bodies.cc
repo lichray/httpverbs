@@ -17,8 +17,7 @@ TEST_CASE("string to string body r/w", "[network][mass]")
 	for (int i = 0; i < 500; ++i)
 	{
 		auto arr = get_random_block();
-		req.data.append(reinterpret_cast<char const*>(
-		    arr.data()), arr.size() * sizeof(arr[0]));
+		req.data.append(arr.data(), arr.size());
 	}
 
 	auto resp = req.perform();
