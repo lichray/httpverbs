@@ -34,9 +34,9 @@
 #include <stdlib.h>
 #include <new>
 #include <stdexcept>
-#include <algorithm>
-#include "strings.h"
 #include "stdex/string_view.h"
+
+#include "header_algo.h"
 
 namespace httpverbs
 {
@@ -264,15 +264,12 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 		}
 		else
 		{
-			// this guarantees the headers to be sorted until
-			// the first '\0'. Since field-name is not allowed
-			// to contain '\0', this also guarantees the field-
-			// names to be sorted.
-			auto it = std::lower_bound(begin(sk.ls), end(sk.ls),
-			    from, [](std::string const& a, char const* b)
-			    {
-				return (strcasecmp(a.data(), b) < 0);
-			    });
+			auto p = strchr(from, ':');
+
+			if (*p == '\0')
+				goto done;
+
+			auto it = header_position(sk.ls, from, p - from);
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 			sk.ls.emplace(it, from, size_without_CR_LF);
@@ -283,6 +280,7 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 		}
 	}
 
+done:
 	return sz * nmemb;
 }
 

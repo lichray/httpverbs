@@ -23,46 +23,42 @@
  * SUCH DAMAGE.
  */
 
-#include <httpverbs/response.h>
+#ifndef _HTTPVERBS_HEADER_ALGO_H
+#define _HTTPVERBS_HEADER_ALGO_H
 
-#include "header_algo.h"
+#include <algorithm>
+#include <iterator>
+#include "strings.h"
 
 namespace httpverbs
 {
 
-boost::optional<std::string> response::get_header(char const* name) const
+namespace
 {
-	typedef boost::optional<std::string>		R;
-	typedef std::string::const_reverse_iterator	reversed;
 
-	// XXX not yet support duplicated field-names
-	auto name_len = strlen(name);
-	auto it = header_position(headers_, name, name_len);
+using std::begin;
+using std::end;
 
-	if (it == end(headers_))
-		return boost::none;
+template <typename Container>
+auto header_position(Container& c, char const* name, size_t name_len)
+	-> decltype(begin(c))
+{
+	return std::lower_bound(begin(c), end(c), name,
+	    [=](std::string const& a, char const* b)
+	    {
+		auto elen = a.find(':');
+		auto rlen = std::min(elen, name_len);
+		auto r = strncasecmp(a.data(), b, rlen);
 
-	auto& hl = *it;
-
-	if (strncasecmp(hl.data(), name, name_len) != 0)
-		return boost::none;
-
-	// it's libcurl's job to concatenate multi-line headers,
-	// so HTTP LWS actually means SP and HT here
-	auto is_LWS = [](char c)
-	{
-		return c == ' ' or c == '\t';
-	};
-
-	auto hl_b = begin(hl);
-	auto hl_e = end(hl);
-
-	// trim
-	auto fc_b = std::find_if_not(hl_b + name_len + 1, hl_e, is_LWS);
-	auto fc_e = std::find_if_not(reversed(hl_e), reversed(fc_b),
-	    is_LWS).base();
-
-	return R(boost::in_place(fc_b, fc_e));
+		if (r == 0)
+			return elen < name_len;
+		else
+			return r < 0;
+	    });
 }
 
 }
+
+}
+
+#endif

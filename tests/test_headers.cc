@@ -1,9 +1,16 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+#include "test_data.h"
 
 #include <httpverbs/httpverbs.h>
 
 #include <curl/curlver.h>
+
+#include <unordered_map>
+#include <utility>
+#include <tuple>
+#include <stdlib.h>
+#include <stdio.h>
 
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
@@ -38,4 +45,40 @@ TEST_CASE("field-content can be empty", "[objects][network]")
 
 	REQUIRE(resp.get_header("X-NERV"));
 	REQUIRE(resp.get_header("X-NERV").get().empty());
+}
+
+TEST_CASE("massive unique header lookup", "[network][mass]")
+{
+	auto req = httpverbs::request("ECHO", host);
+
+	std::unordered_map<std::string, int> m;
+	std::string buf = "x-";
+
+	for (int i = 1; i < 40; ++i)
+	{
+		bool inserted;
+		decltype(begin(m)) it;
+
+		append_random_text(buf, 10);
+		std::tie(it, inserted) = m.insert(std::make_pair(buf, i));
+		buf.erase(2);
+
+		if (inserted)
+		{
+			char ibuf[10];
+			snprintf(ibuf, sizeof(ibuf), "%d", i);
+
+			req.add_header(it->first, ibuf);
+		}
+	}
+
+	auto resp = req.perform();
+
+	for (auto it = begin(m); it != end(m); ++it)
+	{
+		auto h = resp.get_header(it->first);
+
+		REQUIRE(h);
+		CHECK(strtol(h.get().data(), NULL, 10) == it->second);
+	}
 }

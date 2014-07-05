@@ -89,6 +89,11 @@ struct response
 
 	boost::optional<std::string> get_header(char const* name) const;
 
+	boost::optional<std::string> get_header(std::string const& name) const
+	{
+		return get_header(name.data());
+	}
+
 private:
 	friend struct request;
 	response() {}  // status_code code has an indeterminate value

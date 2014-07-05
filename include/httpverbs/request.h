@@ -74,6 +74,21 @@ struct request
 	void refuse_body();
 	response perform();
 
+	void add_header(std::string const& name, std::string const& value)
+	{
+		add_header(name.data(), value.data());
+	}
+
+	void add_header(std::string const& name, char const* value)
+	{
+		add_header(name.data(), value);
+	}
+
+	void add_header(char const* name, std::string const& value)
+	{
+		add_header(name, value.data());
+	}
+
 private:
 	request(request const&);  // = delete
 
