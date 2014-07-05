@@ -67,7 +67,7 @@ struct response
 
 #endif
 
-	friend inline
+	friend
 	bool operator==(response const& a, response const& b)
 	{
 		return a.url == b.url and
@@ -76,7 +76,7 @@ struct response
 		    a.headers_ == b.headers_;
 	}
 
-	friend inline
+	friend
 	bool operator!=(response const& a, response const& b)
 	{
 		return !(a == b);

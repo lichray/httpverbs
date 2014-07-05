@@ -366,14 +366,14 @@ struct basic_string_view
 		return offset_from_begin(it);
 	}
 
-	friend inline
+	friend
 	bool operator==(basic_string_view a, basic_string_view b)
 	{
 		return a.size() == b.size() and traits_type::compare(a.data(),
 		    b.data(), a.size()) == 0;
 	}
 
-	friend inline
+	friend
 	bool operator!=(basic_string_view a, basic_string_view b)
 	{
 		return !(a == b);

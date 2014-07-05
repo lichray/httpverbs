@@ -58,13 +58,13 @@ struct request
 	friend
 	void swap(request& a, request& b);
 
-	friend inline
+	friend
 	bool operator==(request const& a, request const& b)
 	{
 		return a.handle_ == b.handle_;
 	}
 
-	friend inline
+	friend
 	bool operator!=(request const& a, request const& b)
 	{
 		return !(a == b);
