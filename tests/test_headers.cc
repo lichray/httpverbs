@@ -59,7 +59,7 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 		decltype(begin(m)) it;
 
 		std::tie(it, inserted) = m.insert(std::make_pair(
-		    "x-" + get_random_text(10), i));
+		    "x-" + get_random_text(randint(1, 10)), i));
 
 		if (inserted)
 		{
@@ -78,5 +78,28 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 
 		REQUIRE(h);
 		CHECK(strtol(h.get().data(), NULL, 10) == it->second);
+	}
+}
+
+TEST_CASE("long header insertion and lookup", "[network][mass]")
+{
+	auto req = httpverbs::request("ECHO", host);
+
+	SECTION("longer than local buffer")
+	{
+		auto h = get_random_text(150);
+		req.add_header("X-I-1", h);
+		auto resp = req.perform();
+
+		REQUIRE(resp.get_header("X-I-1") == h);
+	}
+
+	SECTION("reallocate triggered")
+	{
+		auto h = get_random_text(20000);
+		req.add_header("X-WUG", h);
+		auto resp = req.perform();
+
+		REQUIRE(resp.get_header("X-WUG") == h);
 	}
 }

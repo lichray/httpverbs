@@ -43,20 +43,25 @@ OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first,
 	return d_first;
 }
 
+template <typename IntType>
 inline
-auto get_random_text(size_t maxlen, std::string const& from =
-    "-0123456789abcdefghijklmnopqrstuvwxyz")
-	-> std::string
+IntType randint(IntType a, IntType b)
 {
-	typedef std::uniform_int_distribution<size_t>	dist_t;
+	typedef std::uniform_int_distribution<IntType>	dist_t;
 	typedef typename dist_t::param_type		param_t;
 
 	static dist_t d;
 
-	std::string to;
+	return d(e, param_t(a, b));
+}
 
-	auto l = d(e, param_t(1, maxlen));
-	sample(begin(from), end(from), std::back_inserter(to), l, e);
+inline
+auto get_random_text(size_t len, std::string const& from =
+    "-0123456789abcdefghijklmnopqrstuvwxyz")
+	-> std::string
+{
+	std::string to;
+	sample(begin(from), end(from), std::back_inserter(to), len, e);
 
 	return to;
 }
