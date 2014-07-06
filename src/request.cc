@@ -79,7 +79,6 @@ request::request(char const* method, std::string url) :
 	if (handle_ == nullptr)
 		throw bad_request();
 
-	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
 	curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method);
 }
 
@@ -178,6 +177,11 @@ void request::setup_sorted_response_headers(void* p)
 void request::perform_on(response& resp)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
+	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
+
+#if defined(CURLRES_ASYNCH)
+	curl_easy_setopt(handle_.get(), CURLOPT_NOSIGNAL, 1L);
+#endif
 
 	if (headers_ != nullptr)
 		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER,
