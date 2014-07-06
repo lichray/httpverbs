@@ -47,13 +47,7 @@ struct request
 	request(char const* method, std::string url);
 
 	request(request&& other);
-
-	request& operator=(request other)
-	{
-		swap(*this, other);
-
-		return *this;
-	}
+	request& operator=(request other);
 
 	friend
 	void swap(request& a, request& b);
@@ -71,23 +65,12 @@ struct request
 	}
 
 	void add_header(char const* name, char const* value);
+	void add_header(char const* name, std::string const& value);
+	void add_header(std::string const& name, char const* value);
+	void add_header(std::string const& name, std::string const& value);
+
 	void ignore_response_body();
 	response perform();
-
-	void add_header(std::string const& name, std::string const& value)
-	{
-		add_header(name.data(), value.data());
-	}
-
-	void add_header(std::string const& name, char const* value)
-	{
-		add_header(name.data(), value);
-	}
-
-	void add_header(char const* name, std::string const& value)
-	{
-		add_header(name, value.data());
-	}
 
 private:
 	request(request const&);  // = delete
@@ -120,6 +103,32 @@ private:
 	std::unique_ptr<curl_slist, _curl_slist_deleter> headers_;
 	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };
+
+inline
+request& request::operator=(request other)
+{
+	swap(*this, other);
+
+	return *this;
+}
+
+inline
+void request::add_header(std::string const& name, std::string const& value)
+{
+	add_header(name.data(), value.data());
+}
+
+inline
+void request::add_header(std::string const& name, char const* value)
+{
+	add_header(name.data(), value);
+}
+
+inline
+void request::add_header(char const* name, std::string const& value)
+{
+	add_header(name, value.data());
+}
 
 }
 

@@ -47,24 +47,8 @@ struct response
 	{}
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
-
-	response(response&& other) :
-		url(std::move(other.url)),
-		content(std::move(other.content)),
-		status_code(std::move(other.status_code)),
-		headers_(std::move(other.headers_))
-	{}
-
-	response& operator=(response&& other)
-	{
-		url = std::move(other.url);
-		content = std::move(other.content);
-		status_code = std::move(other.status_code);
-		headers_ = std::move(other.headers_);
-
-		return *this;
-	}
-
+	response(response&& other);
+	response& operator=(response&& other);
 #endif
 
 	friend
@@ -82,17 +66,10 @@ struct response
 		return !(a == b);
 	}
 
-	bool ok() const
-	{
-		return status_code < 400 or status_code >= 600;
-	}
+	bool ok() const;
 
 	boost::optional<std::string> get_header(char const* name) const;
-
-	boost::optional<std::string> get_header(std::string const& name) const
-	{
-		return get_header(name.data());
-	}
+	boost::optional<std::string> get_header(std::string const& name) const;
 
 private:
 	friend struct request;
@@ -100,6 +77,42 @@ private:
 
 	std::vector<std::string> headers_;
 };
+
+#if defined(_MSC_VER) && _MSC_VER < 1800
+
+inline
+response::response(response&& other) :
+	url(std::move(other.url)),
+	content(std::move(other.content)),
+	status_code(std::move(other.status_code)),
+	headers_(std::move(other.headers_))
+{}
+
+inline
+response& response::operator=(response&& other)
+{
+	url = std::move(other.url);
+	content = std::move(other.content);
+	status_code = std::move(other.status_code);
+	headers_ = std::move(other.headers_);
+
+	return *this;
+}
+
+#endif
+
+inline
+bool response::ok() const
+{
+	return status_code < 400 or status_code >= 600;
+}
+
+inline
+auto response::get_header(std::string const& name) const
+	-> boost::optional<std::string>
+{
+	return get_header(name.data());
+}
 
 }
 
