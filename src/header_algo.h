@@ -33,16 +33,14 @@
 namespace httpverbs
 {
 
-namespace
-{
-
-using std::begin;
-using std::end;
-
 template <typename Container>
+inline
 auto header_position(Container& c, char const* name, size_t name_len)
-	-> decltype(begin(c))
+	-> decltype(std::begin(c))  // remove this line in c++14
 {
+	using std::begin;
+	using std::end;
+
 	return std::lower_bound(begin(c), end(c), name,
 	    [=](std::string const& a, char const* b)
 	    {
@@ -55,8 +53,6 @@ auto header_position(Container& c, char const* name, size_t name_len)
 		else
 			return r < 0;
 	    });
-}
-
 }
 
 }
