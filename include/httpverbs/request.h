@@ -71,7 +71,7 @@ struct request
 	}
 
 	void add_header(char const* name, char const* value);
-	void refuse_body();
+	void ignore_response_body();
 	response perform();
 
 	void add_header(std::string const& name, std::string const& value)

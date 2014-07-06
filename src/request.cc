@@ -128,7 +128,7 @@ void request::add_curl_header(char const* line)
 	headers_.reset(curl_slist_append(headers_.release(), line));
 }
 
-void request::refuse_body()
+void request::ignore_response_body()
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }

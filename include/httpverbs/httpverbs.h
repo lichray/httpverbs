@@ -79,7 +79,7 @@ inline
 response head(std::string url)
 {
 	auto req = request("HEAD", std::move(url));
-	req.refuse_body();
+	req.ignore_response_body();
 
 	return req.perform();
 }

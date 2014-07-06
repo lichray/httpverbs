@@ -142,7 +142,7 @@ SCENARIO("request can send and receive body", "[objects][network]")
 	GIVEN("a request ignoring coming body")
 	{
 		auto req = httpverbs::request("GET", k3);
-		req.refuse_body();
+		req.ignore_response_body();
 
 		WHEN("the query performed")
 		{
