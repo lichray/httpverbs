@@ -135,7 +135,7 @@ void request::ignore_response_body()
 response request::perform()
 {
 	stdex::string_view sv = data;
-	setup_request_body_from_bytes(&sv, sv.size());
+	setup_request_body_from_bytes(&sv, of_length(sv.size()));
 
 	response resp;
 	setup_response_body_to_string(&resp.content);
@@ -145,11 +145,22 @@ response request::perform()
 	return resp;
 }
 
-void request::setup_request_body_from_bytes(void* p, size_t sz)
+of_length::of_length(size_t n) :
+	v_(n <= std::make_unsigned<curl_off_t>::type(
+	    std::numeric_limits<curl_off_t>::max()) ?
+	    n :
+	    throw std::length_error("larger then curl_off_t"))
+{}
+
+template <>
+of_length::operator curl_off_t()
 {
-	if (sz > std::make_unsigned<curl_off_t>::type(
-	    std::numeric_limits<curl_off_t>::max()))
-		throw std::length_error("request::data");
+	return v_;
+}
+
+void request::setup_request_body_from_bytes(void* p, of_length n)
+{
+	auto sz = curl_off_t(n);
 
 	if (sz != 0)
 	{
@@ -157,8 +168,7 @@ void request::setup_request_body_from_bytes(void* p, size_t sz)
 		curl_easy_setopt(handle_.get(), CURLOPT_READFUNCTION,
 		    read_string);
 		curl_easy_setopt(handle_.get(), CURLOPT_READDATA, p);
-		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE,
-		    curl_off_t(sz));
+		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
 	}
 }
 

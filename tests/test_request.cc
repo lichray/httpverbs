@@ -3,6 +3,8 @@
 
 #include <httpverbs/httpverbs.h>
 
+#include <curl/curl.h>
+
 httpverbs::enable_library _;
 char url[] = "http://localhost/";
 
@@ -45,4 +47,15 @@ TEST_CASE("request comparison", "[objects]")
 	REQUIRE(req1 == req1);
 	REQUIRE(req2 == req2);
 	REQUIRE(req1 != req2);
+}
+
+TEST_CASE("of_length as a safe curl_off_t carrier", "[objects]")
+{
+	using httpverbs::of_length;
+
+	CHECK(curl_off_t(of_length(-1)) == CURL_OFF_T_C(-1));
+	CHECK(curl_off_t(of_length(2147483647L)) == CURL_OFF_T_C(2147483647));
+	CHECK(curl_off_t(of_length(size_t(2147483648UL))) ==
+	    CURL_OFF_T_C(2147483648));
+	CHECK_THROWS(of_length(size_t(-1)));
 }

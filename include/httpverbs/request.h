@@ -37,6 +37,24 @@ struct curl_slist;
 namespace httpverbs
 {
 
+struct of_length
+{
+	explicit of_length(int n) : v_(n)
+	{}
+
+	explicit of_length(long n) : v_(n)
+	{}
+
+	explicit of_length(long long n);
+	explicit of_length(size_t n);
+
+	template <typename T>
+	operator T();
+
+private:
+	__int64_t v_;
+};
+
 struct response;
 
 struct request
@@ -75,7 +93,7 @@ struct request
 private:
 	request(request const&);  // = delete
 
-	void setup_request_body_from_bytes(void* p, size_t sz);
+	void setup_request_body_from_bytes(void* p, of_length n);
 	void setup_response_body_to_string(void* p);
 	void setup_sorted_response_headers(void* p);
 	void perform_on(response& resp);
@@ -103,6 +121,12 @@ private:
 	std::unique_ptr<curl_slist, _curl_slist_deleter> headers_;
 	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };
+
+inline
+of_length::of_length(long long n) : v_(n)
+{
+	static_assert(sizeof(n) <= sizeof(v_), "bug me if you see this");
+}
 
 inline
 request& request::operator=(request other)
