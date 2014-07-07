@@ -42,6 +42,7 @@ namespace httpverbs
 
 const struct from_data_t {} from_data = {};
 const struct to_content_t {} to_content = {};
+const struct ignoring_response_body_t {} ignoring_response_body = {};
 
 struct of_length
 {
@@ -95,13 +96,14 @@ struct request
 	void add_header(std::string const& name, char const* value);
 	void add_header(std::string const& name, std::string const& value);
 
-	void ignore_response_body();
-
 	response perform();
 	response perform(from_data_t, to_content_t);
 	response perform(from_data_t, callback_t writer);
+	response perform(from_data_t, ignoring_response_body_t);
 	response perform(callback_t reader, of_length n, to_content_t);
 	response perform(callback_t reader, of_length n, callback_t writer);
+	response perform(callback_t reader, of_length n,
+	    ignoring_response_body_t);
 
 private:
 	request(request const&);  // = delete
@@ -110,6 +112,7 @@ private:
 	void setup_request_body_from_callback(void* p, of_length n);
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
+	void setup_response_body_ignored();
 	void setup_sorted_response_headers(void* p);
 	void perform_on(response& resp);
 

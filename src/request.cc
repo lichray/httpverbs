@@ -128,11 +128,6 @@ void request::add_curl_header(char const* line)
 	headers_.reset(curl_slist_append(headers_.release(), line));
 }
 
-void request::ignore_response_body()
-{
-	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
-}
-
 response request::perform()
 {
 	stdex::string_view sv = data;
@@ -181,6 +176,18 @@ response request::perform(callback_t reader, of_length n, to_content_t)
 	return resp;
 }
 
+response request::perform(callback_t reader, of_length n,
+    ignoring_response_body_t)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_ignored();
+
+	perform_on(resp);
+
+	return resp;
+}
+
 response request::perform(from_data_t, callback_t writer)
 {
 	stdex::string_view sv = data;
@@ -197,6 +204,19 @@ response request::perform(from_data_t, callback_t writer)
 response request::perform(from_data_t, to_content_t)
 {
 	return perform();
+}
+
+response request::perform(from_data_t, ignoring_response_body_t)
+{
+	stdex::string_view sv = data;
+	setup_request_body_from_bytes(&sv, of_length(sv.size()));
+
+	response resp;
+	setup_response_body_ignored();
+
+	perform_on(resp);
+
+	return resp;
 }
 
 void request::setup_request_body_from_bytes(void* p, of_length n)
@@ -237,6 +257,11 @@ void request::setup_response_body_to_callback(void* p)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, call_function);
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
+}
+
+void request::setup_response_body_ignored()
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }
 
 void request::setup_sorted_response_headers(void* p)
