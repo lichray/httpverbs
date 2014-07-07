@@ -4,9 +4,6 @@
 
 #include <httpverbs/httpverbs.h>
 
-#include <chrono>
-#include <iostream>
-
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
 

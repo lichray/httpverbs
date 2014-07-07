@@ -64,7 +64,11 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 		if (inserted)
 		{
 			char ibuf[10];
+#if defined(WIN32)
+			sprintf_s(ibuf, sizeof(ibuf), "%d", i);
+#else
 			snprintf(ibuf, sizeof(ibuf), "%d", i);
+#endif
 
 			req.add_header(it->first, ibuf);
 		}

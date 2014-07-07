@@ -11,10 +11,14 @@ auto get_random_block() -> std::array<char, 4096>
 {
 	std::array<char, 4096> arr;
 
-	auto be = reinterpret_cast<std::mt19937::result_type*>(&*begin(arr));
-	auto ed = reinterpret_cast<std::mt19937::result_type*>(&*end(arr));
+	auto it = reinterpret_cast<decltype(e())*>(arr.data());
+	auto n = arr.size() / sizeof(decltype(e()));
 
-	std::generate(be, ed, e);
+#if !defined(_MSC_VER)
+	std::generate_n(it, n, e);
+#else
+	std::generate_n(stdext::make_unchecked_array_iterator(it), n, e);
+#endif
 
 	return arr;
 }

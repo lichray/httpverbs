@@ -42,7 +42,7 @@ auto header_position(Container& c, char const* name, size_t name_len)
 	using std::end;
 
 	return std::lower_bound(begin(c), end(c), name,
-	    [=](std::string const& a, char const* b)
+	    [=](std::string const& a, char const* b) -> bool
 	    {
 		auto elen = a.find(':');
 		auto rlen = std::min(elen, name_len);

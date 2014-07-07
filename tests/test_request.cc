@@ -57,5 +57,7 @@ TEST_CASE("of_length as a safe curl_off_t carrier", "[objects]")
 	CHECK(curl_off_t(of_length(2147483647L)) == CURL_OFF_T_C(2147483647));
 	CHECK(curl_off_t(of_length(size_t(2147483648UL))) ==
 	    CURL_OFF_T_C(2147483648));
-	CHECK_THROWS(of_length(size_t(-1)));
+
+	if (sizeof(size_t) == sizeof(curl_off_t))
+		CHECK_THROWS(of_length(size_t(-1)));
 }

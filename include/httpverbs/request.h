@@ -28,6 +28,7 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 
 extern "C"
 {
@@ -52,7 +53,7 @@ struct of_length
 	operator T();
 
 private:
-	__int64_t v_;
+	int64_t v_;
 };
 
 struct response;
