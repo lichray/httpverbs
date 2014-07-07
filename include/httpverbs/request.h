@@ -26,9 +26,11 @@
 #ifndef HTTPVERBS_REQUEST_H
 #define HTTPVERBS_REQUEST_H
 
+#include <type_traits>
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <functional>
 
 extern "C"
 {
@@ -37,6 +39,9 @@ struct curl_slist;
 
 namespace httpverbs
 {
+
+const struct from_data_t {} from_data = {};
+const struct to_content_t {} to_content = {};
 
 struct of_length
 {
@@ -60,6 +65,8 @@ struct response;
 
 struct request
 {
+	typedef std::function<size_t(char*, size_t)> callback_t;
+
 	std::string url;
 	std::string data;
 
@@ -89,13 +96,20 @@ struct request
 	void add_header(std::string const& name, std::string const& value);
 
 	void ignore_response_body();
+
 	response perform();
+	response perform(from_data_t, to_content_t);
+	response perform(from_data_t, callback_t writer);
+	response perform(callback_t reader, of_length n, to_content_t);
+	response perform(callback_t reader, of_length n, callback_t writer);
 
 private:
 	request(request const&);  // = delete
 
 	void setup_request_body_from_bytes(void* p, of_length n);
+	void setup_request_body_from_callback(void* p, of_length n);
 	void setup_response_body_to_string(void* p);
+	void setup_response_body_to_callback(void* p);
 	void setup_sorted_response_headers(void* p);
 	void perform_on(response& resp);
 

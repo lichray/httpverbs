@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <sstream>
+#include <iomanip>
+#include <cstring>
+
+#include <boost/uuid/sha1.hpp>
 
 static auto e = std::mt19937(std::random_device()());
 
@@ -65,7 +70,71 @@ auto get_random_text(size_t len, std::string const& from =
 	-> std::string
 {
 	std::string to;
-	sample(begin(from), end(from), std::back_inserter(to), len, e);
+	to.resize(len);
+
+	generate(begin(to), end(to),
+	    [&]()
+	    {
+		return from[randint(size_t(0), from.size() - 1)];
+	    });
 
 	return to;
 }
+
+struct sha1
+{
+	sha1() {}
+
+	explicit sha1(char const* s)
+	{
+		update(s);
+	}
+
+	explicit sha1(char const* s, size_t n)
+	{
+		update(s, n);
+	}
+
+	template <typename StringLike>
+	explicit sha1(StringLike const& bytes)
+	{
+		update(bytes);
+	}
+
+	void update(char const* s)
+	{
+		update(s, std::strlen(s));
+	}
+
+	void update(char const* s, size_t n)
+	{
+		h_.process_bytes(s, n);
+	}
+
+	template <typename StringLike>
+	void update(StringLike const& bytes)
+	{
+		update(bytes.data(), bytes.size());
+	}
+
+	auto hexdigest() -> std::string
+	{
+		unsigned int arr[5];
+		std::stringstream out;
+
+		h_.get_digest(arr);
+
+		out << std::hex << std::setfill('0');
+
+		std::for_each(std::begin(arr), std::end(arr),
+		    [&](unsigned int i)
+		    {
+			out << std::setw(8) << i;
+		    });
+
+		return out.str();
+	}
+
+private:
+	boost::uuids::detail::sha1 h_;
+};

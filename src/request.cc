@@ -58,6 +58,7 @@ void request::_curl_handle_deleter::operator()(void* p) const
 
 static size_t read_string(char*, size_t, size_t, void*);
 static size_t write_string(char*, size_t, size_t, void*);
+static size_t call_function(char*, size_t, size_t, void*);
 static size_t fill_headers(char*, size_t, size_t, void*);
 
 namespace
@@ -158,6 +159,46 @@ of_length::operator curl_off_t()
 	return v_;
 }
 
+response request::perform(callback_t reader, of_length n, callback_t writer)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_to_callback(&writer);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+response request::perform(callback_t reader, of_length n, to_content_t)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_to_string(&resp.content);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+response request::perform(from_data_t, callback_t writer)
+{
+	stdex::string_view sv = data;
+	setup_request_body_from_bytes(&sv, of_length(sv.size()));
+
+	response resp;
+	setup_response_body_to_callback(&writer);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+response request::perform(from_data_t, to_content_t)
+{
+	return perform();
+}
+
 void request::setup_request_body_from_bytes(void* p, of_length n)
 {
 	auto sz = curl_off_t(n);
@@ -165,16 +206,36 @@ void request::setup_request_body_from_bytes(void* p, of_length n)
 	if (sz != 0)
 	{
 		curl_easy_setopt(handle_.get(), CURLOPT_UPLOAD, 1L);
+		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
 		curl_easy_setopt(handle_.get(), CURLOPT_READFUNCTION,
 		    read_string);
 		curl_easy_setopt(handle_.get(), CURLOPT_READDATA, p);
-		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
 	}
 }
 
 void request::setup_response_body_to_string(void* p)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, write_string);
+	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
+}
+
+void request::setup_request_body_from_callback(void* p, of_length n)
+{
+	auto sz = curl_off_t(n);
+
+	if (sz != 0)
+	{
+		curl_easy_setopt(handle_.get(), CURLOPT_UPLOAD, 1L);
+		curl_easy_setopt(handle_.get(), CURLOPT_INFILESIZE_LARGE, sz);
+		curl_easy_setopt(handle_.get(), CURLOPT_READFUNCTION,
+		    call_function);
+		curl_easy_setopt(handle_.get(), CURLOPT_READDATA, p);
+	}
+}
+
+void request::setup_response_body_to_callback(void* p)
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, call_function);
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
 }
 
@@ -253,6 +314,11 @@ size_t write_string(char* from, size_t sz, size_t nmemb, void* to)
 	s.append(from, sz * nmemb);
 
 	return sz * nmemb;
+}
+
+size_t call_function(char* from, size_t sz, size_t nmemb, void* f)
+{
+	return (*reinterpret_cast<request::callback_t*>(f))(from, sz * nmemb);
 }
 
 size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
