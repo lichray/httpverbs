@@ -41,7 +41,12 @@ TEST_CASE("callback to callback body r/w", "[network][mass]")
 
 		auto s = get_random_text(n);
 
+#if !defined(_MSC_VER)
 		s.copy(d, n);
+#else
+		std::copy(begin(s), end(s),
+		    stdext::make_unchecked_array_iterator(d));
+#endif
 		nbytes -= n;
 		h1.update(s);
 

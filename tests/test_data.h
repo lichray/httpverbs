@@ -72,7 +72,7 @@ auto get_random_text(size_t len, std::string const& from =
 	std::string to;
 	to.resize(len);
 
-	generate(begin(to), end(to),
+	std::generate(begin(to), end(to),
 	    [&]()
 	    {
 		return from[randint(size_t(0), from.size() - 1)];
