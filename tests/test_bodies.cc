@@ -4,6 +4,8 @@
 
 #include <httpverbs/httpverbs.h>
 
+#include <string.h>
+
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
 
@@ -61,4 +63,63 @@ TEST_CASE("callback to callback body r/w", "[network][mass]")
 	    });
 
 	CHECK(h1.hexdigest() == h2.hexdigest());
+}
+
+TEST_CASE("other body policies", "[objects][network]")
+{
+	SECTION("from data to callback")
+	{
+		auto req = httpverbs::request("ECHO", host);
+		req.data = "Fly me to the moon";
+
+		sha1 h;
+
+		auto resp = req.perform(
+		    from_data,
+		    [&](char* s, size_t n) -> size_t
+		    {
+			h.update(s, n);
+
+			return n;
+		    });
+
+		CHECK(h.hexdigest() == sha1(req.data).hexdigest());
+	}
+
+	SECTION("from callback to content")
+	{
+		auto req = httpverbs::request("ECHO", host);
+		char s[] = "And let me play among the stars";
+
+		auto resp = req.perform(
+		    [&](char* d, size_t n) -> size_t
+		    {
+			strncpy(d, s, n);  // give me strlcpy(3)
+
+			return sizeof(s) - 1;
+		    },
+		    of_length(sizeof(s) - 1),
+		    to_content);
+
+		CHECK(resp.content == s);
+	}
+
+	SECTION("from callback to nothing")
+	{
+		auto req = httpverbs::request("ECHO", host);
+		char s[] = "Let me see what spring is like";
+
+		auto resp = req.perform(
+		    [&](char* d, size_t n) -> size_t
+		    {
+			strncpy(d, s, n);
+
+			return sizeof(s);
+		    },
+		    of_length(sizeof(s)),
+		    httpverbs::ignoring_response_body);
+
+		REQUIRE(resp.status_code == 200);
+		REQUIRE(resp.content.empty());
+	}
 }
