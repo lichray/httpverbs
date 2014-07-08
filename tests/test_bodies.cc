@@ -4,7 +4,7 @@
 
 #include <httpverbs/httpverbs.h>
 
-#include <string.h>
+#include <stdlib.h>
 
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
@@ -94,7 +94,7 @@ TEST_CASE("other body policies", "[objects][network]")
 		auto resp = req.perform(
 		    [&](char* d, size_t n) -> size_t
 		    {
-			strncpy(d, s, n);  // give me strlcpy(3)
+			memcpy(d, s, sizeof(s) - 1);
 
 			return sizeof(s) - 1;
 		    },
@@ -112,7 +112,7 @@ TEST_CASE("other body policies", "[objects][network]")
 		auto resp = req.perform(
 		    [&](char* d, size_t n) -> size_t
 		    {
-			strncpy(d, s, n);
+			memcpy(d, s, sizeof(s));
 
 			return sizeof(s);
 		    },
