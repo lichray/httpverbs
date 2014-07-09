@@ -148,12 +148,6 @@ of_length::of_length(size_t n) :
 	    throw std::length_error("larger then curl_off_t"))
 {}
 
-template <>
-of_length::operator curl_off_t()
-{
-	return v_;
-}
-
 response request::perform(callback_t reader, of_length n, callback_t writer)
 {
 	response resp;
@@ -221,7 +215,7 @@ response request::perform(from_data_t, ignoring_response_body_t)
 
 void request::setup_request_body_from_bytes(void* p, of_length n)
 {
-	auto sz = curl_off_t(n);
+	auto sz = curl_off_t(n.value());
 
 	if (sz != 0)
 	{
@@ -241,7 +235,7 @@ void request::setup_response_body_to_string(void* p)
 
 void request::setup_request_body_from_callback(void* p, of_length n)
 {
-	auto sz = curl_off_t(n);
+	auto sz = curl_off_t(n.value());
 
 	if (sz != 0)
 	{

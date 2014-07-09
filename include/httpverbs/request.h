@@ -55,8 +55,7 @@ struct of_length
 	explicit of_length(long long n);
 	explicit of_length(size_t n);
 
-	template <typename T>
-	operator T();
+	int64_t value() const;
 
 private:
 	int64_t v_;
@@ -144,6 +143,12 @@ inline
 of_length::of_length(long long n) : v_(n)
 {
 	static_assert(sizeof(n) <= sizeof(v_), "bug me if you see this");
+}
+
+inline
+int64_t of_length::value() const
+{
+	return v_;
 }
 
 inline

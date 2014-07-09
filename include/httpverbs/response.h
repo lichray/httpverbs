@@ -73,6 +73,7 @@ struct response
 
 private:
 	friend struct request;
+
 	response() {}  // status_code code has an indeterminate value
 
 	std::vector<std::string> headers_;
