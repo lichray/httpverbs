@@ -1,0 +1,9 @@
+# - Config file for the httpverbs package
+# It defines the following variables
+#  httpverbs_INCLUDE_DIRS - include directories for httpverbs
+#  httpverbs_LIBRARIES    - libraries to link against
+
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/httpverbs/httpverbs-targets.cmake)
+
+set(httpverbs_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
+set(httpverbs_LIBRARIES httpverbs)

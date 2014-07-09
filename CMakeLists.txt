@@ -76,7 +76,10 @@ if(BUILD_TESTING)
 endif()
 
 file(GLOB httpverbs_hdrs include/httpverbs/*.h)
+configure_file(httpverbs-config.cmake.in httpverbs-config.cmake)
+export(PACKAGE httpverbs)
 
 install(FILES ${httpverbs_hdrs} DESTINATION include/httpverbs)
 install(TARGETS httpverbs EXPORT httpverbs-targets ARCHIVE DESTINATION lib)
 install(EXPORT httpverbs-targets DESTINATION lib/cmake/httpverbs)
+install(FILES httpverbs-config.cmake DESTINATION lib/cmake/httpverbs)
