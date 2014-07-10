@@ -57,7 +57,7 @@ TEST_CASE("request with customized headers", "[objects][network]")
 	SECTION("send unaccepted content-type")
 	{
 		auto req = httpverbs::request("PUT", k2);
-		req.add_header("Content-Type", "text/html");
+		req.headers.add("Content-Type", "text/html");
 
 		auto resp = req.perform();
 
@@ -67,7 +67,7 @@ TEST_CASE("request with customized headers", "[objects][network]")
 	SECTION("send accepted content-type")
 	{
 		auto req = httpverbs::request("PUT", k2);
-		req.add_header("Content-Type", "text/plain");
+		req.headers.add("Content-Type", "text/plain");
 
 		auto resp = req.perform();
 
@@ -83,15 +83,15 @@ TEST_CASE("response receiving headers", "[objects][network]")
 
 	SECTION("header not presented")
 	{
-		auto s = resp.get_header("content-type");
+		auto s = resp.headers.get("content-type");
 
 		REQUIRE_FALSE(s);
 	}
 
 	SECTION("headers presented")
 	{
-		auto s1 = resp.get_header("server");
-		auto s2 = resp.get_header("date");
+		auto s1 = resp.headers.get("server");
+		auto s2 = resp.headers.get("date");
 
 		REQUIRE(s1);
 		REQUIRE_FALSE(s1.get().empty());
@@ -102,9 +102,9 @@ TEST_CASE("response receiving headers", "[objects][network]")
 
 	SECTION("header is case-insensitive")
 	{
-		auto s1 = resp.get_header("Allow");
-		auto s2 = resp.get_header("allow");
-		auto s3 = resp.get_header("aLLoW");
+		auto s1 = resp.headers.get("Allow");
+		auto s2 = resp.headers.get("allow");
+		auto s3 = resp.headers.get("aLLoW");
 
 		REQUIRE(s1 == std::string("GET, PUT, DELETE"));
 		REQUIRE(s2 == s1);
@@ -155,7 +155,7 @@ SCENARIO("request can send and receive body", "[objects][network]")
 
 			THEN("response is received but body is discarded")
 			{
-				REQUIRE(resp.get_header("content-type"));
+				REQUIRE(resp.headers.get("content-type"));
 				REQUIRE(resp.content.empty());
 			}
 		}

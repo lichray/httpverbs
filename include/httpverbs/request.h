@@ -26,16 +26,13 @@
 #ifndef HTTPVERBS_REQUEST_H
 #define HTTPVERBS_REQUEST_H
 
+#include "header_dict.h"
+
 #include <type_traits>
 #include <string>
 #include <memory>
 #include <cstdint>
 #include <functional>
-
-extern "C"
-{
-struct curl_slist;
-}
 
 namespace httpverbs
 {
@@ -68,6 +65,7 @@ struct request
 	typedef std::function<size_t(char*, size_t)> callback_t;
 
 	std::string url;
+	header_dict headers;
 	std::string data;
 
 	request(char const* method, std::string url);
@@ -90,11 +88,6 @@ struct request
 		return !(a == b);
 	}
 
-	void add_header(char const* name, char const* value);
-	void add_header(char const* name, std::string const& value);
-	void add_header(std::string const& name, char const* value);
-	void add_header(std::string const& name, std::string const& value);
-
 	response perform();
 	response perform(from_data_t, to_content_t);
 	response perform(from_data_t, callback_t writer);
@@ -112,21 +105,12 @@ private:
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
 	void setup_response_body_ignored();
-	void setup_sorted_response_headers(void* p);
+	void setup_response_headers(void* p);
 	void perform_on(response& resp);
-
-	template <size_t N>
-	char* try_local_buffer(char (&)[N], size_t);
-	void add_curl_header(char const* line);
 
 	struct _char_deleter
 	{
 		void operator()(char* p) const;
-	};
-
-	struct _curl_slist_deleter
-	{
-		void operator()(curl_slist*) const;
 	};
 
 	struct _curl_handle_deleter
@@ -134,8 +118,6 @@ private:
 		void operator()(void*) const;
 	};
 
-	std::unique_ptr<char, _char_deleter> header_buffer_;
-	std::unique_ptr<curl_slist, _curl_slist_deleter> headers_;
 	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };
 
@@ -157,24 +139,6 @@ request& request::operator=(request other)
 	swap(*this, other);
 
 	return *this;
-}
-
-inline
-void request::add_header(std::string const& name, std::string const& value)
-{
-	add_header(name.data(), value.data());
-}
-
-inline
-void request::add_header(std::string const& name, char const* value)
-{
-	add_header(name.data(), value);
-}
-
-inline
-void request::add_header(char const* name, std::string const& value)
-{
-	add_header(name, value.data());
 }
 
 }

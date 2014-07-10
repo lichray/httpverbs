@@ -36,19 +36,12 @@
 #include <stdexcept>
 #include "stdex/string_view.h"
 
-#include "header_algo.h"
-
 namespace httpverbs
 {
 
 void request::_char_deleter::operator()(char* p) const
 {
 	free(p);
-}
-
-void request::_curl_slist_deleter::operator()(curl_slist* p) const
-{
-	curl_slist_free_all(p);
 }
 
 void request::_curl_handle_deleter::operator()(void* p) const
@@ -68,7 +61,7 @@ struct headers_parser_stack
 {
 	bool done_status_line;
 	bool done_final_header_line;
-	std::vector<std::string>& ls;
+	header_dict& ls;
 };
 
 }
@@ -85,8 +78,8 @@ request::request(char const* method, std::string url) :
 
 request::request(request&& other) :
 	url(std::move(other.url)),
+	headers(std::move(other.headers)),
 	data(std::move(other.data)),
-	headers_(std::move(other.headers_)),
 	handle_(std::move(other.handle_))
 {}
 
@@ -95,37 +88,9 @@ void swap(request& a, request& b)
 	using std::swap;
 
 	swap(a.url, b.url);
+	swap(a.headers, b.headers);
 	swap(a.data, b.data);
-	swap(a.headers_, b.headers_);
 	swap(a.handle_, b.handle_);
-}
-
-void request::add_header(char const* name, char const* value)
-{
-	char buf[128];
-	auto nv = strlen(name);
-	auto lv = strlen(value);
-	char* p;
-
-	if (lv > 0)
-	{
-		p = try_local_buffer(buf, nv + lv + 3);
-		_mscpy(_mscpy(_mscpy(p, name, nv), ": ", 2), value, lv + 1);
-		add_curl_header(p);
-	}
-#if LIBCURL_VERSION_NUM >= 0x071700
-	else  // empty header support in 7.23.0
-	{
-		p = try_local_buffer(buf, nv + 2);
-		_mscpy(_mscpy(p, name, nv), ";", 2);
-		add_curl_header(p);
-	}
-#endif
-}
-
-void request::add_curl_header(char const* line)
-{
-	headers_.reset(curl_slist_append(headers_.release(), line));
 }
 
 response request::perform()
@@ -258,7 +223,7 @@ void request::setup_response_body_ignored()
 	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }
 
-void request::setup_sorted_response_headers(void* p)
+void request::setup_response_headers(void* p)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_HEADERFUNCTION, fill_headers);
 	curl_easy_setopt(handle_.get(), CURLOPT_HEADERDATA, p);
@@ -273,12 +238,35 @@ void request::perform_on(response& resp)
 	curl_easy_setopt(handle_.get(), CURLOPT_NOSIGNAL, 1L);
 #endif
 
-	if (headers_ != nullptr)
-		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER,
-		    headers_.get());
+	std::unique_ptr<curl_slist[]> hll;
 
-	headers_parser_stack sk = { false, false, resp.headers_ };
-	setup_sorted_response_headers(&sk);
+	if (not headers.empty())
+	{
+		using std::begin;
+		using std::end;
+
+		hll.reset(new curl_slist[headers.size()]);
+		auto p = hll.get();
+
+		for (auto it = begin(headers); it != end(headers); ++it)
+		{
+			// this is an example how you can get undefined
+			// behavior with non-confirming headers:
+			// libcurl modifies and only modifies the input
+			// data when your header is in the
+			// "header-ended-by;" format in order to to send
+			// an empty header.
+			p->data = const_cast<char*>(it->data());
+			p->next = p + 1;
+			++p;
+		}
+		(p - 1)->next = nullptr;
+
+		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER, hll.get());
+	}
+
+	headers_parser_stack sk = { false, false, resp.headers };
+	setup_response_headers(&sk);
 
 	auto r = curl_easy_perform(handle_.get());
 
@@ -292,28 +280,6 @@ void request::perform_on(response& resp)
 	char* new_url;
 	curl_easy_getinfo(handle_.get(), CURLINFO_EFFECTIVE_URL, &new_url);
 	resp.url = new_url;
-}
-
-template <size_t N>
-char* request::try_local_buffer(char (&arr)[N], size_t sz)
-{
-	if (sz <= N)
-		return arr;
-	else
-	{
-		// reallocf(3)
-		auto oldp = header_buffer_.release();
-		header_buffer_.reset(
-		    reinterpret_cast<char*>(realloc(oldp, sz)));
-
-		if (header_buffer_.get() == nullptr)
-		{
-			free(oldp);
-			throw std::bad_alloc();
-		}
-
-		return header_buffer_.get();
-	}
 }
 
 size_t read_string(char* to, size_t sz, size_t nmemb, void* from)
@@ -358,28 +324,11 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 		auto size_without_CR_LF = sz * nmemb - 2;
 
 		if (size_without_CR_LF == 0)
-		{
 			sk.done_final_header_line = true;
-		}
 		else
-		{
-			auto p = strchr(from, ':');
-
-			if (*p == '\0')
-				goto done;
-
-			auto it = header_position(sk.ls, from, p - from);
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-			sk.ls.emplace(it, from, size_without_CR_LF);
-#else
-			sk.ls.insert(it, std::string(from,
-			    size_without_CR_LF));
-#endif
-		}
+			sk.ls.add_line(std::string(from, size_without_CR_LF));
 	}
 
-done:
 	return sz * nmemb;
 }
 

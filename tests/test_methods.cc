@@ -22,13 +22,13 @@ TEST_CASE("CRUD operations", "[network]")
 		auto resp = httpverbs::get(k);
 
 		REQUIRE(resp.status_code == 200);
-		REQUIRE(resp.get_header("content-type"));
+		REQUIRE(resp.headers.get("content-type"));
 		REQUIRE(resp.content == "ZONE//ALONE");
 
 		resp = httpverbs::head(k);
 
 		REQUIRE(resp.status_code == 200);
-		REQUIRE_FALSE(resp.get_header("content-type"));
+		REQUIRE_FALSE(resp.headers.get("content-type"));
 		REQUIRE(resp.content.empty());  // needs an evil server
 	}
 
@@ -41,7 +41,7 @@ TEST_CASE("CRUD operations", "[network]")
 		resp = httpverbs::get(k);
 
 		REQUIRE(resp.status_code == 200);
-		REQUIRE(resp.get_header("content-type"));
+		REQUIRE(resp.headers.get("content-type"));
 		REQUIRE(resp.content.empty());
 	}
 
@@ -64,7 +64,7 @@ TEST_CASE("other methods", "[network]")
 		auto resp = httpverbs::options(host);
 
 		REQUIRE(resp.status_code == 200);
-		REQUIRE(resp.get_header("allow"));
+		REQUIRE(resp.headers.get("allow"));
 	}
 
 	SECTION("post")
@@ -72,6 +72,6 @@ TEST_CASE("other methods", "[network]")
 		auto resp = httpverbs::post(host);
 
 		REQUIRE(resp.status_code == 405);
-		REQUIRE(resp.get_header("allow"));
+		REQUIRE(resp.headers.get("allow"));
 	}
 }

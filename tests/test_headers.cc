@@ -19,32 +19,29 @@ TEST_CASE("value has no surrounding whitespace", "[objects][network]")
 {
 	auto req = httpverbs::request("ECHO", host);
 
-	req.add_header("X-EVA-01", " \t\t\t purple");
-	req.add_header("X-EVA-00", "blue\t\t\t");
-	req.add_header("X-EVA-02", " red\t");
+	req.headers.add("X-EVA-01", " \t\t\t purple");
+	req.headers.add("X-EVA-00", "blue\t\t\t");
+	req.headers.add("X-EVA-02", " red\t");
 
 	auto resp = req.perform();
 
-	CHECK(resp.get_header("X-EVA-01") == std::string("purple"));
-	CHECK(resp.get_header("X-EVA-00") == std::string("blue"));
-	CHECK(resp.get_header("X-EVA-02") == std::string("red"));
+	CHECK(resp.headers["X-EVA-01"] == "purple");
+	CHECK(resp.headers["X-EVA-00"] == "blue");
+	CHECK(resp.headers["X-EVA-02"] == "red");
 }
 
-TEST_CASE("field-content can be empty", "[objects][network]")
+TEST_CASE("can retrieve empty field-content", "[objects][network]")
 {
 	auto req = httpverbs::request("ECHO", host);
 
-#if LIBCURL_VERSION_NUM >= 0x071700
-	req.add_header("X-NERV", "");
-#else
 	// double evil hack to test empty header support
-	req.add_header("X-ignore:\r\nX-NERV", " ");
-#endif
+	req.headers.add("X-ignore:\r\nX-NERV", " ");
 
 	auto resp = req.perform();
+	auto h = resp.headers.get("X-NERV");
 
-	REQUIRE(resp.get_header("X-NERV"));
-	REQUIRE(resp.get_header("X-NERV").get().empty());
+	REQUIRE(h);
+	REQUIRE(h.get().empty());
 }
 
 TEST_CASE("massive unique header lookup", "[network][mass]")
@@ -70,7 +67,7 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 			snprintf(ibuf, sizeof(ibuf), "%d", i);
 #endif
 
-			req.add_header(it->first, ibuf);
+			req.headers.add(it->first, ibuf);
 		}
 	}
 
@@ -78,10 +75,9 @@ TEST_CASE("massive unique header lookup", "[network][mass]")
 
 	for (auto it = begin(m); it != end(m); ++it)
 	{
-		auto h = resp.get_header(it->first);
+		auto h = resp.headers[it->first];
 
-		REQUIRE(h);
-		CHECK(strtol(h.get().data(), NULL, 10) == it->second);
+		CHECK(strtol(h.data(), NULL, 10) == it->second);
 	}
 }
 
@@ -92,18 +88,18 @@ TEST_CASE("long header insertion and lookup", "[network][mass]")
 	SECTION("longer than local buffer")
 	{
 		auto h = get_random_text(150);
-		req.add_header("X-I-1", h);
+		req.headers.add("X-I-1", h);
 		auto resp = req.perform();
 
-		REQUIRE(resp.get_header("X-I-1") == h);
+		REQUIRE(resp.headers.get("X-I-1") == h);
 	}
 
 	SECTION("reallocate triggered")
 	{
 		auto h = get_random_text(20000);
-		req.add_header("X-WUG", h);
+		req.headers.add("X-WUG", h);
 		auto resp = req.perform();
 
-		REQUIRE(resp.get_header("X-WUG") == h);
+		REQUIRE(resp.headers.get("X-WUG") == h);
 	}
 }

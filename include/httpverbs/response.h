@@ -26,21 +26,20 @@
 #ifndef HTTPVERBS_RESPONSE_H
 #define HTTPVERBS_RESPONSE_H
 
-#include <boost/optional.hpp>
+#include "header_dict.h"
 
 #include <string>
 #include <vector>
-
-#include "config.h"
 
 namespace httpverbs
 {
 
 struct response
 {
-	std::string url;
-	std::string content;
 	int status_code;
+	std::string url;
+	header_dict headers;
+	std::string content;
 
 	explicit response(int status_code) :
 		status_code(status_code)
@@ -54,10 +53,10 @@ struct response
 	friend
 	bool operator==(response const& a, response const& b)
 	{
-		return a.url == b.url and
-		    a.content == b.content and
-		    a.status_code == b.status_code and
-		    a.headers_ == b.headers_;
+		return a.status_code == b.status_code and
+		    a.url == b.url and
+		    a.headers == b.headers and
+		    a.content == b.content;
 	}
 
 	friend
@@ -68,34 +67,29 @@ struct response
 
 	bool ok() const;
 
-	boost::optional<std::string> get_header(char const* name) const;
-	boost::optional<std::string> get_header(std::string const& name) const;
-
 private:
 	friend struct request;
 
 	response() {}  // status_code code has an indeterminate value
-
-	std::vector<std::string> headers_;
 };
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
 
 inline
 response::response(response&& other) :
-	url(std::move(other.url)),
-	content(std::move(other.content)),
 	status_code(std::move(other.status_code)),
-	headers_(std::move(other.headers_))
+	url(std::move(other.url)),
+	headers(std::move(other.headers)),
+	content(std::move(other.content))
 {}
 
 inline
 response& response::operator=(response&& other)
 {
-	url = std::move(other.url);
-	content = std::move(other.content);
 	status_code = std::move(other.status_code);
-	headers_ = std::move(other.headers_);
+	url = std::move(other.url);
+	headers = std::move(other.headers);
+	content = std::move(other.content);
 
 	return *this;
 }
@@ -106,13 +100,6 @@ inline
 bool response::ok() const
 {
 	return status_code < 400 or status_code >= 600;
-}
-
-inline
-auto response::get_header(std::string const& name) const
-	-> boost::optional<std::string>
-{
-	return get_header(name.data());
 }
 
 }
