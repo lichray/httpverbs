@@ -34,17 +34,17 @@
 namespace httpverbs
 {
 
-template <typename Container>
-inline
-auto header_position(Container& c, char const* name, size_t name_len)
-	-> decltype(std::begin(c))  // remove this line in c++14
+namespace
 {
-	using std::begin;
-	using std::end;
 
-	return std::lower_bound(begin(c), end(c), name,
-	    [=](std::string const& a, char const* b) -> bool
-	    {
+struct header_compare
+{
+	explicit header_compare(size_t name_len) :
+		name_len(name_len)
+	{}
+
+	bool operator()(std::string const& a, char const* b)
+	{
 		auto elen = a.find(':');
 		auto rlen = std::min(elen, name_len);
 		auto r = strncasecmp(a.data(), b, rlen);
@@ -53,7 +53,45 @@ auto header_position(Container& c, char const* name, size_t name_len)
 			return elen < name_len;
 		else
 			return r < 0;
-	    });
+	}
+
+	bool operator()(char const* a, std::string const& b)
+	{
+		auto elen = b.find(':');
+		auto rlen = std::min(name_len, elen);
+		auto r = strncasecmp(a, b.data(), rlen);
+
+		if (r == 0)
+			return name_len < elen;
+		else
+			return r < 0;
+	}
+
+private:
+	size_t name_len;
+};
+
+}
+
+using std::begin;
+using std::end;
+
+template <typename Container>
+inline
+auto next_position(Container& c, char const* name, size_t name_len)
+	-> decltype(begin(c))
+{
+	return std::upper_bound(begin(c), end(c), name,
+	    header_compare(name_len));
+}
+
+template <typename Container>
+inline
+auto header_range(Container& c, char const* name, size_t name_len)
+	-> decltype(std::make_pair(begin(c), end(c)))
+{
+	return std::equal_range(begin(c), end(c), name,
+	    header_compare(name_len));
 }
 
 template <typename Iter>
@@ -84,6 +122,27 @@ auto trimmed_range(BidirIt first, BidirIt last)
 	return std::make_pair(fc_b, fc_e);
 }
 
+template <typename Iter>
+inline
+std::string join_trimmed_values(Iter first, Iter last, size_t name_len)
+{
+	std::string v;
+	auto it = first;
+
+	while (1)
+	{
+		auto fc = trimmed_range(begin(*it) + name_len + 1, end(*it));
+		v.append(fc.first, fc.second);
+
+		if (++it != last)
+			v.append(", ");
+		else
+			break;
+	}
+
+	return v;
+}
+
 void header_dict::add(char const* name, char const* value)
 {
 	auto nv = strlen(name);
@@ -109,49 +168,31 @@ void header_dict::add(std::string header)
 
 void header_dict::add_line_split_at(std::string header, size_t pos)
 {
-	auto it = header_position(hlist_, header.data(), pos);
+	auto it = next_position(hlist_, header.data(), pos);
 
 	hlist_.insert(it, std::move(header));
 }
 
 auto header_dict::operator[](char const* name) const -> value_type
 {
-	// XXX not yet support duplicated field-names
 	auto name_len = strlen(name);
-	auto it = header_position(hlist_, name, name_len);
+	auto hr = header_range(hlist_, name, name_len);
 
-	if (it == end(hlist_))
+	if (hr.first == hr.second)
 		throw std::out_of_range("no such header");
 
-	auto& hl = *it;
-
-	if (strncasecmp(hl.data(), name, name_len) != 0)
-		throw std::out_of_range("no such header");
-
-	auto fc = trimmed_range(begin(hl) + name_len + 1, end(hl));
-
-	return std::string(fc.first, fc.second);
+	return join_trimmed_values(hr.first, hr.second, name_len);
 }
 
 auto header_dict::get(char const* name) const -> boost::optional<value_type>
 {
-	typedef boost::optional<std::string> R;
-
-	// XXX not yet support duplicated field-names
 	auto name_len = strlen(name);
-	auto it = header_position(hlist_, name, name_len);
+	auto hr = header_range(hlist_, name, name_len);
 
-	if (it == end(hlist_))
+	if (hr.first == hr.second)
 		return boost::none;
 
-	auto& hl = *it;
-
-	if (strncasecmp(hl.data(), name, name_len) != 0)
-		return boost::none;
-
-	auto fc = trimmed_range(begin(hl) + name_len + 1, end(hl));
-
-	return R(boost::in_place(fc.first, fc.second));
+	return join_trimmed_values(hr.first, hr.second, name_len);
 }
 
 }
