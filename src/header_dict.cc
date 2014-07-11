@@ -45,29 +45,32 @@ struct header_compare
 
 	bool operator()(std::string const& a, char const* b)
 	{
-		auto elen = a.find(':');
-		auto rlen = std::min(elen, name_len);
-		auto r = strncasecmp(a.data(), b, rlen);
-
-		if (r == 0)
-			return elen < name_len;
-		else
-			return r < 0;
+		return b_cmp(a.data(), a.find(':'), b, name_len);
 	}
 
 	bool operator()(char const* a, std::string const& b)
 	{
-		auto elen = b.find(':');
-		auto rlen = std::min(name_len, elen);
-		auto r = strncasecmp(a, b.data(), rlen);
+		return b_cmp(a, name_len, b.data(), b.find(':'));
+	}
+
+	bool operator()(std::string const& a, std::string const& b)
+	{
+		return b_cmp(a.data(), a.find(':'), b.data(), b.find(':'));
+	}
+
+private:
+	static
+	bool b_cmp(char const* a, size_t alen, char const* b, size_t blen)
+	{
+		auto rlen = std::min(alen, blen);
+		auto r = strncasecmp(a, b, rlen);
 
 		if (r == 0)
-			return name_len < elen;
+			return alen < blen;
 		else
 			return r < 0;
 	}
 
-private:
 	size_t name_len;
 };
 
