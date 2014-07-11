@@ -229,6 +229,20 @@ void request::setup_response_headers(void* p)
 	curl_easy_setopt(handle_.get(), CURLOPT_HEADERDATA, p);
 }
 
+template <typename T, size_t N>
+inline
+T* choose_buffer(T (&arr)[N], std::unique_ptr<T[]>& darr, size_t n)
+{
+	if (n <= N)
+		return arr;
+	else
+	{
+		darr.reset(new T[n]);
+
+		return darr.get();
+	}
+}
+
 void request::perform_on(response& resp)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
@@ -239,11 +253,12 @@ void request::perform_on(response& resp)
 #endif
 
 	std::unique_ptr<curl_slist[]> hll;
+	curl_slist fhll[16];
 
 	if (not headers.empty())
 	{
-		hll.reset(new curl_slist[headers.size()]);
-		auto p = hll.get();
+		auto buf = choose_buffer(fhll, hll, headers.size());
+		auto p = buf;
 
 		for (auto it = begin(headers); it != end(headers); ++it)
 		{
@@ -257,7 +272,7 @@ void request::perform_on(response& resp)
 		}
 		(p - 1)->next = nullptr;
 
-		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER, hll.get());
+		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER, buf);
 	}
 
 	headers_parser_stack sk = { false, false, resp.headers };
