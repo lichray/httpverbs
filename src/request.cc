@@ -321,7 +321,7 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 		if (size_without_CR_LF == 0)
 			sk.done_final_header_line = true;
 		else
-			sk.ls.add_line(std::string(from, size_without_CR_LF));
+			sk.ls.add(std::string(from, size_without_CR_LF));
 	}
 
 	return sz * nmemb;

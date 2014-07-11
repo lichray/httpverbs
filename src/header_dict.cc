@@ -90,13 +90,14 @@ void header_dict::add(char const* name, char const* value)
 	auto lv = strlen(value);
 
 	std::string header;
-	header.reserve(nv + 2 + lv);
 
+	header.reserve(nv + 2 + lv);
 	header.append(name, nv).append(": ").append(value, lv);
+
 	add_line_split_at(std::move(header), nv);
 }
 
-void header_dict::add_line(std::string header)
+void header_dict::add(std::string header)
 {
 	auto pos = header.find(':');
 

@@ -78,7 +78,7 @@ public:
 	void add(std::string const& name, char const* value);
 	void add(std::string const& name, std::string const& value);
 
-	void add_line(std::string header);
+	void add(std::string header);
 
 	friend const_iterator begin(header_dict const& d);
 	friend const_iterator end(header_dict const& d);

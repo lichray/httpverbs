@@ -9,8 +9,8 @@ SCENARIO("header_dict can be copied and moved", "[objects]")
 	{
 		auto hdr = httpverbs::header_dict();
 
-		hdr.add_line("Q: Sora no kanata ni aru mono wa");
-		hdr.add("A", "Mayoigo o haha no te ni michibiku mono, EXILE");
+		hdr.add("Q: Sora no kanata ni aru mono wa");
+		hdr.add("A: Mayoigo o haha no te ni michibiku mono, EXILE");
 
 		REQUIRE(hdr.size() == 2);
 
@@ -48,7 +48,7 @@ TEST_CASE("header_dict non-header handling", "[objects]")
 
 	SECTION("header without colon (libcurl)")
 	{
-		hdr.add_line("not-a-header;");
+		hdr.add("not-a-header;");
 
 		REQUIRE(hdr.empty());
 		REQUIRE_FALSE(hdr.get("not-a-header"));
