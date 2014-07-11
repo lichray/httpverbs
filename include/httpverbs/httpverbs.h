@@ -40,6 +40,15 @@ response get(std::string url)
 }
 
 inline
+response get(std::string url, header_dict headers)
+{
+	auto req = request("GET", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
+}
+
+inline
 response put(std::string url)
 {
 	return request("PUT", std::move(url)).perform();
@@ -49,6 +58,25 @@ inline
 response put(std::string url, std::string data)
 {
 	auto req = request("PUT", std::move(url));
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
+inline
+response put(std::string url, header_dict headers)
+{
+	auto req = request("PUT", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
+}
+
+inline
+response put(std::string url, header_dict headers, std::string data)
+{
+	auto req = request("PUT", std::move(url));
+	req.headers = std::move(headers);
 	req.data = std::move(data);
 
 	return req.perform();
@@ -70,9 +98,37 @@ response post(std::string url, std::string data)
 }
 
 inline
+response post(std::string url, header_dict headers)
+{
+	auto req = request("POST", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
+}
+
+inline
+response post(std::string url, header_dict headers, std::string data)
+{
+	auto req = request("POST", std::move(url));
+	req.headers = std::move(headers);
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
+inline
 response delete_(std::string url)
 {
 	return request("DELETE", std::move(url)).perform();
+}
+
+inline
+response delete_(std::string url, header_dict headers)
+{
+	auto req = request("DELETE", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
 }
 
 inline
@@ -83,9 +139,27 @@ response head(std::string url)
 }
 
 inline
+response head(std::string url, header_dict headers)
+{
+	auto req = request("HEAD", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform(from_data, ignoring_response_body);
+}
+
+inline
 response options(std::string url)
 {
 	return request("OPTIONS", std::move(url)).perform();
+}
+
+inline
+response options(std::string url, header_dict headers)
+{
+	auto req = request("OPTIONS", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
 }
 
 inline
@@ -98,6 +172,25 @@ inline
 response patch(std::string url, std::string data)
 {
 	auto req = request("PATCH", std::move(url));
+	req.data = std::move(data);
+
+	return req.perform();
+}
+
+inline
+response patch(std::string url, header_dict headers)
+{
+	auto req = request("PATCH", std::move(url));
+	req.headers = std::move(headers);
+
+	return req.perform();
+}
+
+inline
+response patch(std::string url, header_dict headers, std::string data)
+{
+	auto req = request("PATCH", std::move(url));
+	req.headers = std::move(headers);
 	req.data = std::move(data);
 
 	return req.perform();

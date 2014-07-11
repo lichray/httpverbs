@@ -5,11 +5,10 @@
 
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
+auto k = host + "k";
 
 TEST_CASE("CRUD operations", "[network]")
 {
-	auto k = host + "k";
-
 	SECTION("create")
 	{
 		auto resp = httpverbs::put(k, "ZONE//ALONE");
@@ -73,5 +72,28 @@ TEST_CASE("other methods", "[network]")
 
 		REQUIRE(resp.status_code == 405);
 		REQUIRE(resp.headers.get("allow"));
+	}
+}
+
+TEST_CASE("header overloads", "[network]")
+{
+	SECTION("url + headers")
+	{
+		auto hdr = httpverbs::header_dict();
+		hdr.add("content-type: text/plain");
+
+		auto resp = httpverbs::put(k, hdr);
+
+		REQUIRE(resp.status_code == 201);
+	}
+
+	SECTION("url + headers + data")
+	{
+		auto hdr = httpverbs::header_dict();
+		hdr.add("content-type: text/html");
+
+		auto resp = httpverbs::put(k, hdr, "<p>TERMINATED</p>");
+
+		REQUIRE(resp.status_code == 400);
 	}
 }
