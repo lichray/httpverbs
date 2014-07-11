@@ -31,18 +31,12 @@
 
 #include <type_traits>
 #include <limits>
-#include <stdlib.h>
 #include <new>
 #include <stdexcept>
 #include "stdex/string_view.h"
 
 namespace httpverbs
 {
-
-void request::_char_deleter::operator()(char* p) const
-{
-	free(p);
-}
 
 void request::_curl_handle_deleter::operator()(void* p) const
 {

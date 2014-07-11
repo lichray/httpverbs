@@ -108,11 +108,6 @@ private:
 	void setup_response_headers(void* p);
 	void perform_on(response& resp);
 
-	struct _char_deleter
-	{
-		void operator()(char* p) const;
-	};
-
 	struct _curl_handle_deleter
 	{
 		void operator()(void*) const;
