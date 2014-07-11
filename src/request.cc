@@ -242,9 +242,6 @@ void request::perform_on(response& resp)
 
 	if (not headers.empty())
 	{
-		using std::begin;
-		using std::end;
-
 		hll.reset(new curl_slist[headers.size()]);
 		auto p = hll.get();
 

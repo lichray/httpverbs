@@ -67,11 +67,11 @@ public:
 		return !(a == b);
 	}
 
-	std::string operator[](char const* name) const;
-	std::string operator[](std::string const& name) const;
+	value_type operator[](char const* name) const;
+	value_type operator[](std::string const& name) const;
 
-	boost::optional<std::string> get(char const* name) const;
-	boost::optional<std::string> get(std::string const& name) const;
+	boost::optional<value_type> get(char const* name) const;
+	boost::optional<value_type> get(std::string const& name) const;
 
 	void add(char const* name, char const* value);
 	void add(char const* name, std::string const& value);
@@ -80,8 +80,8 @@ public:
 
 	void add_line(std::string header);
 
-	const_iterator begin() const;
-	const_iterator end() const;
+	friend const_iterator begin(header_dict const& d);
+	friend const_iterator end(header_dict const& d);
 
 	bool empty() const;
 	size_type size() const;
@@ -108,14 +108,14 @@ header_dict& header_dict::operator=(header_dict&& other)
 #endif
 
 inline
-std::string header_dict::operator[](std::string const& name) const
+auto header_dict::operator[](std::string const& name) const -> value_type
 {
 	return (*this)[name.data()];
 }
 
 inline
 auto header_dict::get(std::string const& name) const
-	-> boost::optional<std::string>
+	-> boost::optional<value_type>
 {
 	return get(name.data());
 }
@@ -139,15 +139,15 @@ void header_dict::add(char const* name, std::string const& value)
 }
 
 inline
-header_dict::const_iterator header_dict::begin() const
+header_dict::const_iterator begin(header_dict const& d)
 {
-	return hlist_.begin();
+	return d.hlist_.begin();
 }
 
 inline
-header_dict::const_iterator header_dict::end() const
+header_dict::const_iterator end(header_dict const& d)
 {
-	return hlist_.end();
+	return d.hlist_.end();
 }
 
 inline
@@ -157,7 +157,7 @@ bool header_dict::empty() const
 }
 
 inline
-header_dict::size_type header_dict::size() const
+auto header_dict::size() const -> size_type
 {
 	return hlist_.size();
 }

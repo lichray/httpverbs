@@ -113,13 +113,13 @@ void header_dict::add_line_split_at(std::string header, size_t pos)
 	hlist_.insert(it, std::move(header));
 }
 
-std::string header_dict::operator[](char const* name) const
+auto header_dict::operator[](char const* name) const -> value_type
 {
 	// XXX not yet support duplicated field-names
 	auto name_len = strlen(name);
 	auto it = header_position(hlist_, name, name_len);
 
-	if (it == hlist_.end())
+	if (it == end(hlist_))
 		throw std::out_of_range("no such header");
 
 	auto& hl = *it;
@@ -127,12 +127,12 @@ std::string header_dict::operator[](char const* name) const
 	if (strncasecmp(hl.data(), name, name_len) != 0)
 		throw std::out_of_range("no such header");
 
-	auto fc = trimmed_range(hl.begin() + name_len + 1, hl.end());
+	auto fc = trimmed_range(begin(hl) + name_len + 1, end(hl));
 
 	return std::string(fc.first, fc.second);
 }
 
-boost::optional<std::string> header_dict::get(char const* name) const
+auto header_dict::get(char const* name) const -> boost::optional<value_type>
 {
 	typedef boost::optional<std::string> R;
 
@@ -140,7 +140,7 @@ boost::optional<std::string> header_dict::get(char const* name) const
 	auto name_len = strlen(name);
 	auto it = header_position(hlist_, name, name_len);
 
-	if (it == hlist_.end())
+	if (it == end(hlist_))
 		return boost::none;
 
 	auto& hl = *it;
@@ -148,7 +148,7 @@ boost::optional<std::string> header_dict::get(char const* name) const
 	if (strncasecmp(hl.data(), name, name_len) != 0)
 		return boost::none;
 
-	auto fc = trimmed_range(hl.begin() + name_len + 1, hl.end());
+	auto fc = trimmed_range(begin(hl) + name_len + 1, end(hl));
 
 	return R(boost::in_place(fc.first, fc.second));
 }
