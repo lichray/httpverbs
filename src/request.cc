@@ -247,12 +247,10 @@ void request::perform_on(response& resp)
 
 		for (auto it = begin(headers); it != end(headers); ++it)
 		{
-			// this is an example how you can get undefined
-			// behavior with non-confirming headers:
 			// libcurl modifies and only modifies the input
 			// data when your header is in the
-			// "header-ended-by;" format in order to to send
-			// an empty header.
+			// "header-ended-by;" format; fortunately such
+			// headers are already skipped.
 			p->data = const_cast<char*>(it->data());
 			p->next = p + 1;
 			++p;
