@@ -26,7 +26,7 @@
 #ifndef _HTTPVERBS_STRINGS_H
 #define _HTTPVERBS_STRINGS_H
 
-#include <httpverbs/config.h>
+#include "config.h"
 
 #include <string.h>
 

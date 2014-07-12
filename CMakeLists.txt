@@ -15,7 +15,7 @@ find_package(Boost 1.46.0 REQUIRED)
 
 CHECK_INCLUDE_FILES(strings.h HAVE_STRINGS_H)
 CHECK_FUNCTION_EXISTS(_stricmp HAVE__STRICMP)
-configure_file(src/config.h.in ${CMAKE_SOURCE_DIR}/include/httpverbs/config.h)
+configure_file(src/config.h.in ${CMAKE_SOURCE_DIR}/src/config.h)
 
 if(BUILD_TESTING)
 	find_package(PythonInterp REQUIRED)

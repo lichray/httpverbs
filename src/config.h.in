@@ -23,16 +23,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef HTTPVERBS_CONFIG_H
-#define HTTPVERBS_CONFIG_H
-
-#if defined(_MSC_VER)
-#define NOEXCEPT throw()
-#define NOMINMAX
-#include <ciso646>
-#else
-#define NOEXCEPT noexcept
-#endif
+#ifndef _HTTPVERBS_CONFIG_H
+#define _HTTPVERBS_CONFIG_H
 
 #cmakedefine HAVE_STRINGS_H
 #cmakedefine HAVE__STRICMP

@@ -28,7 +28,11 @@
 
 #include <stdexcept>
 
-#include "config.h"
+#if defined(_MSC_VER)
+#define NOEXCEPT throw()
+#else
+#define NOEXCEPT noexcept
+#endif
 
 namespace httpverbs
 {

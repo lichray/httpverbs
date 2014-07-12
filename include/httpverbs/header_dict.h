@@ -31,7 +31,10 @@
 #include <string>
 #include <vector>
 
-#include "config.h"
+#if defined(_MSC_VER)
+#define NOMINMAX
+#include <ciso646>
+#endif
 
 namespace httpverbs
 {
