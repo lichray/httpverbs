@@ -73,12 +73,20 @@ public:
 	boost::optional<value_type> get(char const* name) const;
 	boost::optional<value_type> get(std::string const& name) const;
 
+	void add(std::string header);
+
 	void add(char const* name, char const* value);
 	void add(char const* name, std::string const& value);
 	void add(std::string const& name, char const* value);
 	void add(std::string const& name, std::string const& value);
 
-	void add(std::string header);
+	void set(char const* name, char const* value);
+	void set(char const* name, std::string const& value);
+	void set(std::string const& name, char const* value);
+	void set(std::string const& name, std::string const& value);
+
+	size_type erase(char const* name);
+	size_type erase(std::string const& name);
 
 	friend const_iterator begin(header_dict const& d);
 	friend const_iterator end(header_dict const& d);
@@ -136,6 +144,30 @@ inline
 void header_dict::add(char const* name, std::string const& value)
 {
 	add(name, value.data());
+}
+
+inline
+void header_dict::set(std::string const& name, std::string const& value)
+{
+	set(name.data(), value.data());
+}
+
+inline
+void header_dict::set(std::string const& name, char const* value)
+{
+	set(name.data(), value);
+}
+
+inline
+void header_dict::set(char const* name, std::string const& value)
+{
+	set(name, value.data());
+}
+
+inline
+auto header_dict::erase(std::string const& name) -> size_type
+{
+	return erase(name.data());
 }
 
 inline

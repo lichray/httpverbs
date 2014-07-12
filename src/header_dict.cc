@@ -146,17 +146,23 @@ std::string join_trimmed_values(Iter first, Iter last, size_t name_len)
 	return v;
 }
 
-void header_dict::add(char const* name, char const* value)
+inline
+std::string b_joined(char const* a, size_t alen, char const* b, size_t blen)
 {
-	auto nv = strlen(name);
-	auto lv = strlen(value);
-
 	std::string header;
 
-	header.reserve(nv + 2 + lv);
-	header.append(name, nv).append(": ").append(value, lv);
+	header.reserve(alen + 2 + blen);
+	header.append(a, alen).append(": ").append(b, blen);
 
-	add_line_split_at(std::move(header), nv);
+	return header;
+}
+
+void header_dict::add(char const* name, char const* value)
+{
+	auto nl = strlen(name);
+	auto vl = strlen(value);
+
+	add_line_split_at(b_joined(name, nl, value, vl), nl);
 }
 
 void header_dict::add(std::string header)
@@ -196,6 +202,31 @@ auto header_dict::get(char const* name) const -> boost::optional<value_type>
 		return boost::none;
 
 	return join_trimmed_values(hr.first, hr.second, name_len);
+}
+
+void header_dict::set(char const* name, char const* value)
+{
+	auto nl = strlen(name);
+	auto vl = strlen(value);
+	auto hr = header_range(hlist_, name, nl);
+
+	if (hr.first == hr.second)
+		hlist_.insert(hr.first, b_joined(name, nl, value, vl));
+	else
+	{
+		hr.first->erase(nl + 1).push_back(' ');
+		hr.first->append(value, vl);
+		hlist_.erase(++hr.first, hr.second);
+	}
+}
+
+auto header_dict::erase(char const* name) -> size_type
+{
+	auto hr = header_range(hlist_, name, strlen(name));
+
+	hlist_.erase(hr.first, hr.second);
+
+	return hr.second - hr.first;
 }
 
 }

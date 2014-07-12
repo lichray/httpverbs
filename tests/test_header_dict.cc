@@ -42,21 +42,7 @@ SCENARIO("header_dict can be copied and moved", "[objects]")
 	}
 }
 
-TEST_CASE("header_dict non-header handling", "[objects]")
-{
-	auto hdr = httpverbs::header_dict();
-
-	SECTION("header without colon (libcurl)")
-	{
-		hdr.add("not-a-header;");
-
-		REQUIRE(hdr.empty());
-		REQUIRE_FALSE(hdr.get("not-a-header"));
-		REQUIRE_THROWS(hdr["not-a-header"]);
-	}
-}
-
-SCENARIO("duplicated field-name lookup", "[objects]")
+SCENARIO("header_dict can handle multi-header", "[objects]")
 {
 	GIVEN("a header_dict with sparse headers with same name")
 	{
@@ -92,5 +78,74 @@ SCENARIO("duplicated field-name lookup", "[objects]")
 				    "2, 1, 3, 4,5, 6  7");
 			}
 		}
+
+		WHEN("you set the name to a value")
+		{
+			hdr.set("multi-header", "4, 2");
+
+			THEN("all headers with that name are replaced")
+			{
+				REQUIRE(hdr.size() == 3);
+				REQUIRE(hdr["multi-header"] == "4, 2");
+			}
+		}
+
+		WHEN("you remove the name")
+		{
+			auto n = hdr.erase("multi-header");
+
+			REQUIRE(n == 3);
+
+			THEN("all headers with that name gone")
+			{
+				REQUIRE_THROWS(hdr["multi-header"]);
+				REQUIRE(hdr.size() == 2);
+			}
+		}
+	}
+}
+
+TEST_CASE("header_dict edge cases", "[objects]")
+{
+	auto hdr = httpverbs::header_dict();
+
+	SECTION("removing non-existing header")
+	{
+		auto n = hdr.erase("Q");
+
+		REQUIRE(n == 0);
+		REQUIRE(hdr.empty());
+	}
+
+	SECTION("setting non-existing header")
+	{
+		hdr.set("Q", "Daichi o kin'iro ni someru nami");
+
+		REQUIRE(hdr.get("Q"));
+		REQUIRE(hdr.size() == 1);
+	}
+
+	SECTION("header without space after colon")
+	{
+		std::string s1 = "Inochi o hagukumu Megumi no ibuki";
+		std::string s2 = "mugi no daichi";
+
+		hdr.add("A:" + s1);
+
+		REQUIRE(*begin(hdr) == "A:" + s1);
+		REQUIRE(hdr["A"] == s1);
+
+		hdr.set("a", s2);
+
+		REQUIRE(*begin(hdr) == "A: " + s2);
+		REQUIRE(hdr["A"] == s2);
+	}
+
+	SECTION("header without colon is ignored")
+	{
+		hdr.add("not-a-header;");
+
+		REQUIRE_FALSE(hdr.get("not-a-header"));
+		REQUIRE(hdr.empty());
 	}
 }
