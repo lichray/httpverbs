@@ -23,36 +23,16 @@
  * SUCH DAMAGE.
  */
 
-#include <httpverbs/exceptions.h>
+#ifndef _HTTPVERBS_POOLED__PERFORM_H
+#define _HTTPVERBS_POOLED__PERFORM_H
 
 #include <curl/curl.h>
 
 namespace httpverbs
 {
 
-char const* bad_request::what() const NOEXCEPT
-{
-	return "curl_easy_init failed";
-}
-
-char const* bad_connection_pool::what() const NOEXCEPT
-{
-	return "curl_multi_init failed";
-}
-
-template <>
-bad_response::bad_response(CURLcode ec) :
-	std::runtime_error(curl_easy_strerror(ec))
-{}
-
-template <>
-bad_response::bad_response(CURLMcode ec) :
-	std::runtime_error(curl_multi_strerror(ec))
-{}
-
-template <>
-bad_response::bad_response(CURLSHcode ec) :
-	std::runtime_error(curl_share_strerror(ec))
-{}
+CURLcode pooled_perform(CURL* handle);
 
 }
+
+#endif

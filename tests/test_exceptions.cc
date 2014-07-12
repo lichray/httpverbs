@@ -5,14 +5,15 @@
 
 #include <curl/curl.h>
 
-inline void throw_bad_request()
-{
-	throw httpverbs::bad_request();
-}
-
 TEST_CASE("bad_request")
 {
-	REQUIRE_THROWS_AS(throw_bad_request(), std::exception);
+	REQUIRE_THROWS_AS(throw httpverbs::bad_request(), std::exception&);
+}
+
+TEST_CASE("bad_connection_pool")
+{
+	REQUIRE_THROWS_AS(throw httpverbs::bad_connection_pool(),
+	    httpverbs::bad_request&);
 }
 
 TEST_CASE("bad_response")

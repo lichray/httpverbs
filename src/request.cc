@@ -27,7 +27,7 @@
 #include <httpverbs/response.h>
 #include <httpverbs/exceptions.h>
 
-#include <curl/curl.h>
+#include "pooled_perform.h"
 
 #include <type_traits>
 #include <limits>
@@ -272,7 +272,7 @@ void request::perform_on(response& resp)
 	headers_parser_stack sk = { false, false, resp.headers };
 	setup_response_headers(&sk);
 
-	auto r = curl_easy_perform(handle_.get());
+	auto r = pooled_perform(handle_.get());
 
 	if (r != CURLE_OK)
 		throw bad_response(r);

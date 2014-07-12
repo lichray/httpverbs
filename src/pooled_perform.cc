@@ -25,34 +25,14 @@
 
 #include <httpverbs/exceptions.h>
 
-#include <curl/curl.h>
+#include "pooled_perform.h"
 
 namespace httpverbs
 {
 
-char const* bad_request::what() const NOEXCEPT
+CURLcode pooled_perform(CURL* handle)
 {
-	return "curl_easy_init failed";
+	return curl_easy_perform(handle);
 }
-
-char const* bad_connection_pool::what() const NOEXCEPT
-{
-	return "curl_multi_init failed";
-}
-
-template <>
-bad_response::bad_response(CURLcode ec) :
-	std::runtime_error(curl_easy_strerror(ec))
-{}
-
-template <>
-bad_response::bad_response(CURLMcode ec) :
-	std::runtime_error(curl_multi_strerror(ec))
-{}
-
-template <>
-bad_response::bad_response(CURLSHcode ec) :
-	std::runtime_error(curl_share_strerror(ec))
-{}
 
 }

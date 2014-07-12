@@ -39,6 +39,12 @@ struct bad_request : std::exception
 	char const* what() const NOEXCEPT;
 };
 
+struct bad_connection_pool : bad_request
+{
+	bad_connection_pool() {}
+	char const* what() const NOEXCEPT;
+};
+
 struct bad_response : std::runtime_error
 {
 	template <typename ErrorType>
