@@ -5,7 +5,7 @@ compiler:
 before_install:
   - sudo apt-get update -qq
 install:
-  - sudo apt-get install -qq libcurl4-openssl-dev libboost-dev
+  - sudo apt-get install -qq libcurl4-openssl-dev libboost-thread1.48-dev
 script:
   - cmake . && make -j4 && make test ARGS=-j4
 after_failure:
