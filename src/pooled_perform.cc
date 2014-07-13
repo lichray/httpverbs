@@ -27,11 +27,48 @@
 
 #include "pooled_perform.h"
 
+#include <memory>
+#include "stdex/defer.h"
+
 namespace httpverbs
 {
 
+struct _curl_share_deleter
+{
+	void operator()(CURLSH* p) const
+	{
+		curl_share_cleanup(p);
+	}
+};
+
+static
+CURLSH* share_handle()
+{
+	static
+	std::unique_ptr<CURLSH, _curl_share_deleter> handle([]
+	    {
+		auto p = curl_share_init();
+
+		if (p == nullptr)
+			throw bad_connection_pool();
+
+		if (curl_share_setopt(p, CURLSHOPT_SHARE,
+		    CURL_LOCK_DATA_SSL_SESSION))
+			throw bad_connection_pool();
+
+		return p;
+	    }());
+
+	return handle.get();
+}
+
 CURLcode pooled_perform(CURL* handle)
 {
+	auto ssl_cache = share_handle();
+
+	curl_easy_setopt(handle, CURLOPT_SHARE, ssl_cache);
+	defer(curl_easy_setopt(handle, CURLOPT_SHARE, nullptr));
+
 	return curl_easy_perform(handle);
 }
 
