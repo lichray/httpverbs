@@ -32,12 +32,12 @@ namespace httpverbs
 
 char const* bad_request::what() const NOEXCEPT
 {
-	return "curl_easy_init failed";
+	return "request preparation failed";
 }
 
 char const* bad_connection_pool::what() const NOEXCEPT
 {
-	return "curl_multi_init failed";
+	return "connection pool initialization failed";
 }
 
 template <>

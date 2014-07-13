@@ -67,7 +67,8 @@ request::request(char const* method, std::string url) :
 	if (handle_ == nullptr)
 		throw bad_request();
 
-	curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method);
+	if (curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method))
+		throw bad_request();
 }
 
 request::request(request&& other) :
@@ -239,7 +240,9 @@ T* choose_buffer(T (&arr)[N], std::unique_ptr<T[]>& darr, size_t n)
 
 void request::perform_on(response& resp)
 {
-	curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data());
+	if (curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data()))
+		throw bad_request();
+
 	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
 
 #if defined(CURLRES_ASYNCH)
