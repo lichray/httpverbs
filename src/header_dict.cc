@@ -214,8 +214,7 @@ void header_dict::set(char const* name, char const* value)
 		hlist_.insert(hr.first, b_joined(name, nl, value, vl));
 	else
 	{
-		hr.first->erase(nl + 1).push_back(' ');
-		hr.first->append(value, vl);
+		hr.first->replace(nl + 1, -1, 1, ' ').append(value, vl);
 		hlist_.erase(++hr.first, hr.second);
 	}
 }
