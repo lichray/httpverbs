@@ -27,17 +27,40 @@
 
 #include "pooled_perform.h"
 
+#if defined(USE_BOOST_CHRONO)
+#define BOOST_CHRONO_HEADER_ONLY
+#include <boost/chrono.hpp>
+#else
+#include <chrono>
+#endif
+
+#if defined(WIN32)
+#include <windows.h>
+#else
+#include <poll.h>
+#endif
+
 #include <memory>
 #include "stdex/defer.h"
 
 namespace httpverbs
 {
 
+static CURLcode do_transfer(CURLM*);
+
 struct _curl_share_deleter
 {
 	void operator()(CURLSH* p) const
 	{
 		curl_share_cleanup(p);
+	}
+};
+
+struct _curl_multi_deleter
+{
+	void operator()(CURLM* p) const
+	{
+		curl_multi_cleanup(p);
 	}
 };
 
@@ -62,14 +85,123 @@ CURLSH* share_handle()
 	return handle.get();
 }
 
+static
+CURLM* multi_handle()
+{
+	static
+	std::unique_ptr<CURLM, _curl_multi_deleter> handle([]
+	    {
+		auto p = curl_multi_init();
+
+		if (p == nullptr)
+			throw bad_connection_pool();
+
+		// libcurl hard-coded ssl session cache to 8, so it
+		// doesn't help much to cache more connections
+		if (curl_multi_setopt(p, CURLMOPT_MAXCONNECTS, 8L))
+			throw bad_connection_pool();
+
+		return p;
+	    }());
+
+	return handle.get();
+}
+
 CURLcode pooled_perform(CURL* handle)
 {
+	// libcurl tries to handle SIGPIPE internally no matter whether
+	// CURLOPT_NOSIGNAL is set.  Hope it's not a big deal if we
+	// unconditionally do not block SIGPIPE here.
+
 	auto ssl_cache = share_handle();
+	auto conn_cache = multi_handle();
 
 	curl_easy_setopt(handle, CURLOPT_SHARE, ssl_cache);
 	defer(curl_easy_setopt(handle, CURLOPT_SHARE, nullptr));
 
-	return curl_easy_perform(handle);
+	if (curl_multi_add_handle(conn_cache, handle))
+		throw bad_connection_pool();
+
+	defer(curl_multi_remove_handle(conn_cache, handle));
+
+	return do_transfer(conn_cache);
+}
+
+#if defined(USE_BOOST_CHRONO)
+using namespace boost::chrono;
+#else
+using namespace std::chrono;
+#endif
+
+template <typename Rep, typename Period>
+inline
+void wait_for(duration<Rep,Period> const& d)
+{
+	auto ms = duration_cast<milliseconds>(d);
+
+#if defined(WIN32)
+	Sleep(ms.count());
+#else
+	// we have turned on CURL_GLOBAL_ACK_EINTR, so the call
+	// is allowed to return early
+	poll(nullptr, 0, ms.count());
+#endif
+}
+
+// The code is modified from libcurl's `easy_transfer` function
+// in lib/easy.c, with less states using returns.
+CURLcode do_transfer(CURLM* multi)
+{
+	int without_fds = 0;
+	int still_running;
+
+	do
+	{
+		int ret;
+		auto before = high_resolution_clock::now();
+
+		if (curl_multi_wait(multi, nullptr, 0, 1000, &ret))
+			return CURLE_OUT_OF_MEMORY;
+
+		if (ret == -1)
+		{
+			return CURLE_RECV_ERROR;
+		}
+		else if (ret == 0)
+		{
+			auto after = high_resolution_clock::now();
+
+			if ((after - before) <= milliseconds(10))
+			{
+				++without_fds;
+
+				if (without_fds > 2)
+				{
+					if (without_fds < 10)
+						wait_for(milliseconds(
+						    1 << (without_fds - 1)));
+					else
+						wait_for(seconds(1));
+				}
+			}
+			else
+				without_fds = 0;
+		}
+		else
+			without_fds = 0;
+
+		if (curl_multi_perform(multi, &still_running))
+			return CURLE_OUT_OF_MEMORY;
+
+	} while (still_running);
+
+	int rc;
+	auto msg = curl_multi_info_read(multi, &rc);
+
+	if (msg != nullptr)
+		return msg->data.result;
+	else
+		return CURLE_OK;
 }
 
 }

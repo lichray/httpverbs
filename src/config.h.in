@@ -29,4 +29,6 @@
 #cmakedefine HAVE_STRINGS_H
 #cmakedefine HAVE__STRICMP
 
+#cmakedefine USE_BOOST_CHRONO
+
 #endif

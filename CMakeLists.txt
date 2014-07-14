@@ -4,14 +4,14 @@ enable_testing()
 
 include(CTest)
 include(CheckIncludeFiles)
+include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
-find_package(CURL REQUIRED)
-find_package(Boost 1.48.0 REQUIRED)
+option(USE_BOOST_CHRONO "Use Boost.Chrono instead of C++11 <chrono>" OFF)
 
 CHECK_INCLUDE_FILES(strings.h HAVE_STRINGS_H)
 CHECK_FUNCTION_EXISTS(_stricmp HAVE__STRICMP)
@@ -56,6 +56,19 @@ else()
 	endforeach()
 endif()
 
+if(USE_BOOST_CHRONO)
+	set(boost_in_use ${boost_in_use} system)
+else()
+	CHECK_INCLUDE_FILE_CXX(chrono HAVE_CHRONO)
+	if(NOT HAVE_CHRONO)
+		message(FATAL_ERROR "C++11 <chrono> not found.
+		    Change option to use Boost.Chrono")
+	endif()
+endif()
+
+find_package(CURL 7.28.0 REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS ${boost_in_use} REQUIRED)
+
 include_directories(${CURL_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(include)
@@ -65,6 +78,7 @@ file(GLOB tests_srcs tests/*.cc)
 
 add_library(httpverbs STATIC ${httpverbs_srcs})
 target_link_libraries(httpverbs ${CURL_LIBRARIES})
+target_link_libraries(httpverbs ${Boost_LIBRARIES})
 
 if(BUILD_TESTING)
 	foreach(test_src ${tests_srcs})
