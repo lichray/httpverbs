@@ -8,7 +8,7 @@ before_install:
 install:
   - sudo apt-get install -qq libcurl4-openssl-dev libboost-thread1.48-dev
 script:
-  - cmake . && make -j4 && make test ARGS=-j4
+  - cmake . -DUSE_BOOST_TSS=ON && make -j4 && make test ARGS=-j4
 after_failure:
   - cat test_server.log
   - tests/run_test_server

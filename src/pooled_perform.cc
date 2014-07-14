@@ -26,12 +26,17 @@
 #include <httpverbs/exceptions.h>
 
 #include "pooled_perform.h"
+#include "config.h"
 
 #if defined(USE_BOOST_CHRONO)
 #define BOOST_CHRONO_HEADER_ONLY
 #include <boost/chrono.hpp>
 #else
 #include <chrono>
+#endif
+
+#if defined(USE_BOOST_TSS)
+#include <boost/thread/tss.hpp>
 #endif
 
 #if defined(WIN32)
@@ -43,32 +48,45 @@
 #include <memory>
 #include "stdex/defer.h"
 
+#if !defined(USE_BOOST_TSS)
+
+# if defined(PER_THREAD_CACHE)
+# define TSS_ thread_local
+# else
+# define TSS_ static
+# endif
+
+#define TSS_POINTER(type, name, cleanup, init)			\
+	struct type##_deleter					\
+	{							\
+		void operator()(type* p) const			\
+		{						\
+			cleanup(p);				\
+		}						\
+	};							\
+	TSS_ std::unique_ptr<type, type##_deleter> name(init);
+
+#else
+
+// cast to char* to workaround a bug in Boost
+// https://svn.boost.org/trac/boost/ticket/10196
+#define TSS_POINTER(type, name, cleanup, init)			\
+	static boost::thread_specific_ptr<char> name(		\
+	    [](char* p) { cleanup((type*)p); });		\
+	if (name.get() == nullptr)				\
+		name.reset(reinterpret_cast<char*>(init));
+
+#endif
+
 namespace httpverbs
 {
 
 static CURLcode do_transfer(CURLM*);
 
-struct _curl_share_deleter
-{
-	void operator()(CURLSH* p) const
-	{
-		curl_share_cleanup(p);
-	}
-};
-
-struct _curl_multi_deleter
-{
-	void operator()(CURLM* p) const
-	{
-		curl_multi_cleanup(p);
-	}
-};
-
 static
 CURLSH* share_handle()
 {
-	static
-	std::unique_ptr<CURLSH, _curl_share_deleter> handle([]
+	TSS_POINTER(CURLSH, handle, curl_share_cleanup, []
 	    {
 		auto p = curl_share_init();
 
@@ -88,8 +106,7 @@ CURLSH* share_handle()
 static
 CURLM* multi_handle()
 {
-	static
-	std::unique_ptr<CURLM, _curl_multi_deleter> handle([]
+	TSS_POINTER(CURLM, handle, curl_multi_cleanup, []
 	    {
 		auto p = curl_multi_init();
 

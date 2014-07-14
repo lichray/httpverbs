@@ -29,6 +29,8 @@
 #cmakedefine HAVE_STRINGS_H
 #cmakedefine HAVE__STRICMP
 
+#cmakedefine PER_THREAD_CACHE
 #cmakedefine USE_BOOST_CHRONO
+#cmakedefine USE_BOOST_TSS
 
 #endif

@@ -6,12 +6,15 @@ include(CTest)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
+include(CheckCXXSourceCompiles)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
+option(PER_THREAD_CACHE "Enable per-thread connection pool" ON)
 option(USE_BOOST_CHRONO "Use Boost.Chrono instead of C++11 <chrono>" OFF)
+option(USE_BOOST_TSS    "Use Boost TSS instead of C++11 thread_local" OFF)
 
 CHECK_INCLUDE_FILES(strings.h HAVE_STRINGS_H)
 CHECK_FUNCTION_EXISTS(_stricmp HAVE__STRICMP)
@@ -63,6 +66,17 @@ else()
 	if(NOT HAVE_CHRONO)
 		message(FATAL_ERROR "C++11 <chrono> not found.
 		    Change option to use Boost.Chrono")
+	endif()
+endif()
+
+if(PER_THREAD_CACHE AND USE_BOOST_TSS)
+	set(boost_in_use ${boost_in_use} thread)
+elseif(PER_THREAD_CACHE)
+	CHECK_CXX_SOURCE_COMPILES("int main() { thread_local int x; }"
+	    CXX11_THREAD_LOCAL)
+	if(NOT CXX11_THREAD_LOCAL)
+		message(FATAL_ERROR "C++11 thread_local unsupported.
+		    Change option to use Boost TSS")
 	endif()
 endif()
 
