@@ -72,7 +72,9 @@ endif()
 if(PER_THREAD_CACHE AND USE_BOOST_TSS)
 	set(boost_in_use ${boost_in_use} thread)
 elseif(PER_THREAD_CACHE)
-	CHECK_CXX_SOURCE_COMPILES("int main() { thread_local int x; }"
+	CHECK_CXX_SOURCE_COMPILES("
+	    #include <string>
+	    int main() { thread_local std::string x; }"
 	    CXX11_THREAD_LOCAL)
 	if(NOT CXX11_THREAD_LOCAL)
 		message(FATAL_ERROR "C++11 thread_local unsupported.
