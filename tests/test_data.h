@@ -4,6 +4,7 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <ostream>
 #include <iomanip>
 #include <cstring>
 
@@ -81,6 +82,70 @@ auto get_random_text(size_t len, std::string const& from =
 	return to;
 }
 
+class randombuf : public std::streambuf
+{
+public:
+	randombuf() : len_(-1)
+	{}
+
+	explicit randombuf(long long len) : len_(len)
+	{}
+
+protected:
+	int_type underflow()
+	{
+		if (len_ == 0)
+			return traits_type::eof();
+
+		if (gptr() == egptr())
+			refill_buffer();
+
+		return traits_type::to_int_type(*gptr());
+	}
+
+private:
+	void refill_buffer()
+	{
+		arr_ = get_random_block();
+		auto p = arr_.data();
+
+		if (len_ == -1)
+			setg(p, p, p + arr_.size());
+		else
+		{
+			auto sz = std::min<long long>(len_, arr_.size());
+			len_ -= sz;
+			setg(p, p, p + sz);
+		}
+	}
+
+	long long len_;
+	decltype(get_random_block()) arr_;
+};
+
+class randomstream : public std::istream
+{
+public:
+	randomstream() :
+		std::ios(nullptr),
+		std::istream(&buf_),
+		buf_(-1)
+	{}
+
+	explicit randomstream(long long len) :
+		std::ios(nullptr),
+		std::istream(&buf_),
+		buf_(len)
+	{}
+
+	randombuf* rdbuf() const
+	{
+		return const_cast<randombuf*>(&buf_);
+	}
+
+private:
+	randombuf buf_;
+};
 struct sha1
 {
 	sha1() {}
