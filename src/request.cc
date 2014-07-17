@@ -29,9 +29,6 @@
 
 #include "pooled_perform.h"
 
-#include <type_traits>
-#include <limits>
-#include <new>
 #include <stdexcept>
 #include "stdex/string_view.h"
 
@@ -85,9 +82,7 @@ response request::perform()
 }
 
 of_length::of_length(size_t n) :
-	v_(n <= std::make_unsigned<curl_off_t>::type(
-	    std::numeric_limits<curl_off_t>::max()) ?
-	    n :
+	v_(n <= INT64_MAX ? n :
 	    throw std::length_error("larger then curl_off_t"))
 {}
 

@@ -28,7 +28,6 @@
 
 #include "header_dict.h"
 
-#include <type_traits>
 #include <string>
 #include <memory>
 #include <cstdint>
