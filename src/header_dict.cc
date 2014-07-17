@@ -25,11 +25,22 @@
 
 #include <httpverbs/header_dict.h>
 
+#include "config.h"
+
 #include <algorithm>
 #include <iterator>
 #include <utility>
 #include <stdexcept>
-#include "strings.h"
+#include <string.h>
+
+#if defined(HAVE_STRINGS_H)
+#include <strings.h>
+#else
+# if defined(HAVE__STRICMP)
+# define strcasecmp	_stricmp
+# define strncasecmp	_strnicmp
+# endif
+#endif
 
 namespace httpverbs
 {
