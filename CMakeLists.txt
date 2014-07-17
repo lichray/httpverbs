@@ -45,18 +45,14 @@ endif()
 if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
 else()
-	foreach(libvar CURL_LIBRARIES)
-		if(${libvar} MATCHES "curl.*\\.lib$")
-			add_definitions(-DCURL_STATICLIB)
-			break()
-		endif()
-	endforeach()
-
 	foreach(flagvar CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
 	    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
 		string(REGEX REPLACE "/MD" "/MT" ${flagvar} "${${flagvar}}")
 		string(REGEX REPLACE "/MDd" "/MTd" ${flagvar} "${${flagvar}}")
 	endforeach()
+
+	set(CMAKE_EXE_LINKER_FLAGS
+	    "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
 endif()
 
 if(USE_BOOST_CHRONO)
@@ -84,6 +80,17 @@ endif()
 
 find_package(CURL 7.28.0 REQUIRED)
 find_package(Boost 1.48.0 COMPONENTS ${boost_in_use} REQUIRED)
+
+if(WIN32)
+	# fix libcurl linking on Windows
+	foreach(libvar CURL_LIBRARIES)
+		if(${libvar} MATCHES "curl.*\\.lib$")
+			add_definitions(-DCURL_STATICLIB)
+			break()
+		endif()
+	endforeach()
+	list(INSERT CURL_LIBRARIES 0 ws2_32 wldap32 crypt32)
+endif()
 
 include_directories(${CURL_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
