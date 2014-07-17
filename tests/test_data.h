@@ -146,6 +146,7 @@ public:
 private:
 	randombuf buf_;
 };
+
 struct sha1
 {
 	sha1() {}
