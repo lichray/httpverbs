@@ -71,23 +71,6 @@ request::request(char const* method, std::string url) :
 		throw bad_request();
 }
 
-request::request(request&& other) :
-	url(std::move(other.url)),
-	headers(std::move(other.headers)),
-	data(std::move(other.data)),
-	handle_(std::move(other.handle_))
-{}
-
-void swap(request& a, request& b)
-{
-	using std::swap;
-
-	swap(a.url, b.url);
-	swap(a.headers, b.headers);
-	swap(a.data, b.data);
-	swap(a.handle_, b.handle_);
-}
-
 response request::perform()
 {
 	stdex::string_view sv = data;
