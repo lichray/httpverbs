@@ -226,17 +226,19 @@ void header_dict::set(char const* name, char const* value)
 	else
 	{
 		hr.first->replace(nl + 1, -1, 1, ' ').append(value, vl);
-		hlist_.erase(++hr.first, hr.second);
+		++hr.first;
+		hlist_.erase(hr.first, hr.second);
 	}
 }
 
 auto header_dict::erase(char const* name) -> size_type
 {
 	auto hr = header_range(hlist_, name, strlen(name));
+	auto diff = hr.second - hr.first;
 
 	hlist_.erase(hr.first, hr.second);
 
-	return hr.second - hr.first;
+	return diff;
 }
 
 }

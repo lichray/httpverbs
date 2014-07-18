@@ -44,9 +44,9 @@ TEST_CASE("C stdio library support", "[network][diskio]")
 		if (not f.is_open())
 			FAIL("cannot open file to calculate sha1");
 
-		while (f.read(buf, sizeof(buf)))
+		while (f.read(buf, sizeof(buf)).good())
 			h.update(buf, sizeof(buf));
-		h.update(buf, f.gcount());
+		h.update(buf, static_cast<size_t>(f.gcount()));
 
 		return h.hexdigest();
 	};
@@ -55,7 +55,7 @@ TEST_CASE("C stdio library support", "[network][diskio]")
 
 	{
 		randombuf src(nbytes);
-		std::ofstream tmp("test_streams_1.tmp");
+		std::ofstream tmp("test_streams_1.tmp", std::ios::binary);
 
 		if (not tmp.is_open())
 			FAIL("cannot open temporary file to write");

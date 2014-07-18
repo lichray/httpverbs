@@ -35,28 +35,26 @@ namespace httpverbs
 
 auto from_stream(std::istream& is)
 	-> decltype(std::bind(
-	    &std::basic_streambuf<char>::sgetn,
+	    &std::streambuf::sgetn,
 	    is.rdbuf(),
 	    std::placeholders::_1,
 	    std::placeholders::_2))
 {
-	typedef std::basic_streambuf<char> buf_t;
 	using namespace std::placeholders;
 
-	return std::bind(&buf_t::sgetn, is.rdbuf(), _1, _2);
+	return std::bind(&std::streambuf::sgetn, is.rdbuf(), _1, _2);
 }
 
 auto to_stream(std::ostream& os)
 	-> decltype(std::bind(
-	    &std::basic_streambuf<char>::sputn,
+	    &std::streambuf::sputn,
 	    os.rdbuf(),
 	    std::placeholders::_1,
 	    std::placeholders::_2))
 {
-	typedef std::basic_streambuf<char> buf_t;
 	using namespace std::placeholders;
 
-	return std::bind(&buf_t::sputn, os.rdbuf(), _1, _2);
+	return std::bind(&std::streambuf::sputn, os.rdbuf(), _1, _2);
 }
 
 }

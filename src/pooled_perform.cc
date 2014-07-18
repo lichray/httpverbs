@@ -71,8 +71,7 @@
 // cast to char* to workaround a bug in Boost
 // https://svn.boost.org/trac/boost/ticket/10196
 #define TSS_POINTER(type, name, cleanup, init)			\
-	static boost::thread_specific_ptr<char> name(		\
-	    [](char* p) { cleanup((type*)p); });		\
+	static boost::thread_specific_ptr<char> name(cleanup);	\
 	if (name.get() == nullptr)				\
 		name.reset(reinterpret_cast<char*>(init));
 
@@ -83,10 +82,26 @@ namespace httpverbs
 
 static CURLcode do_transfer(CURLM*);
 
+#if defined(PER_THREAD_CACHE) && defined(USE_BOOST_TSS)
+
+static
+void curl_share_cleanup(char* p)
+{
+	::curl_share_cleanup((CURLSH*)p);
+}
+
+static
+void curl_multi_cleanup(char* p)
+{
+	::curl_multi_cleanup((CURLM*)p);
+}
+
+#endif
+
 static
 CURLSH* share_handle()
 {
-	TSS_POINTER(CURLSH, handle, curl_share_cleanup, []
+	TSS_POINTER(CURLSH, handle, curl_share_cleanup, []() -> CURLSH*
 	    {
 		auto p = curl_share_init();
 
@@ -106,7 +121,7 @@ CURLSH* share_handle()
 static
 CURLM* multi_handle()
 {
-	TSS_POINTER(CURLM, handle, curl_multi_cleanup, []
+	TSS_POINTER(CURLM, handle, curl_multi_cleanup, []() -> CURLM*
 	    {
 		auto p = curl_multi_init();
 
@@ -157,7 +172,7 @@ void wait_for(duration<Rep,Period> const& d)
 	auto ms = duration_cast<milliseconds>(d);
 
 #if defined(WIN32)
-	Sleep(ms.count());
+	Sleep(static_cast<DWORD>(ms.count()));
 #else
 	// we have turned on CURL_GLOBAL_ACK_EINTR, so the call
 	// is allowed to return early
