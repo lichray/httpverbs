@@ -35,6 +35,19 @@ TEST_CASE("C++ streams library support", "[network]")
 
 TEST_CASE("C stdio library support", "[network][diskio]")
 {
+	auto file_open = [](char const* fn, char const* mode) -> FILE*
+	{
+		FILE* in;
+#if defined(WIN32)
+		if (fopen_s(&in, fn, mode) != 0)
+#else
+		if ((in = fopen(fn, mode)) == nullptr)
+#endif
+			FAIL("cannot open file in mode " << mode);
+
+		return in;
+	};
+
 	auto sha1_of_file = [](char const* fn) -> std::string
 	{
 		std::ifstream f(fn, std::ios::binary);
@@ -67,18 +80,10 @@ TEST_CASE("C stdio library support", "[network][diskio]")
 	defer(std::remove("test_streams_2.tmp"));
 
 	{
-		auto in = fopen("test_streams_1.tmp", "rb");
-
-		if (in == nullptr)
-			FAIL("cannot open temporary file to read");
-
+		auto in = file_open("test_streams_1.tmp", "rb");
 		defer(fclose(in));
 
-		auto out = fopen("test_streams_2.tmp", "wb");
-
-		if (in == nullptr)
-			FAIL("cannot open temporary file to read");
-
+		auto out = file_open("test_streams_2.tmp", "wb");
 		defer(fclose(out));
 
 		auto req = httpverbs::request("ECHO", host);

@@ -28,33 +28,48 @@
 
 #include <istream>
 #include <ostream>
-#include <functional>
 
 namespace httpverbs
 {
 
-auto from_stream(std::istream& is)
-	-> decltype(std::bind(
-	    &std::streambuf::sgetn,
-	    is.rdbuf(),
-	    std::placeholders::_1,
-	    std::placeholders::_2))
+struct _request_sgetn_cb
 {
-	using namespace std::placeholders;
+	explicit _request_sgetn_cb(std::streambuf* p) : p_(p)
+	{}
 
-	return std::bind(&std::streambuf::sgetn, is.rdbuf(), _1, _2);
+	size_t operator()(char* dst, size_t sz)
+	{
+		return static_cast<size_t>(p_->sgetn(dst, sz));
+	}
+
+private:
+	std::streambuf* p_;
+};
+
+struct _request_sputn_cb
+{
+	explicit _request_sputn_cb(std::streambuf* p) : p_(p)
+	{}
+
+	size_t operator()(char const* dst, size_t sz)
+	{
+		return static_cast<size_t>(p_->sputn(dst, sz));
+	}
+
+private:
+	std::streambuf* p_;
+};
+
+auto from_stream(std::istream& is)
+	-> _request_sgetn_cb
+{
+	return _request_sgetn_cb(is.rdbuf());
 }
 
 auto to_stream(std::ostream& os)
-	-> decltype(std::bind(
-	    &std::streambuf::sputn,
-	    os.rdbuf(),
-	    std::placeholders::_1,
-	    std::placeholders::_2))
+	-> _request_sputn_cb
 {
-	using namespace std::placeholders;
-
-	return std::bind(&std::streambuf::sputn, os.rdbuf(), _1, _2);
+	return _request_sputn_cb(os.rdbuf());
 }
 
 }
