@@ -31,6 +31,8 @@
 
 namespace httpverbs
 {
+namespace keywords
+{
 
 auto from_c_file(FILE* stream)
 	-> decltype(std::bind(
@@ -58,6 +60,7 @@ auto to_c_file(FILE* stream)
 	return std::bind(fwrite, _1, 1, _2, stream);
 }
 
+}
 }
 
 #endif

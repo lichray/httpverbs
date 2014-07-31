@@ -141,15 +141,13 @@ SCENARIO("request can send and receive body", "[objects][network]")
 
 	GIVEN("a request with a method expecting body")
 	{
-		using httpverbs::from_data;
-		using httpverbs::ignoring_response_body;
+		using namespace httpverbs::keywords;
 
 		auto req = httpverbs::request("GET", k3);
 
 		WHEN("the query performed by ignoring body")
 		{
-			auto resp = req.perform(from_data,
-			    ignoring_response_body);
+			auto resp = req.perform(ignoring_response_body);
 
 			REQUIRE(resp.status_code == 200);
 

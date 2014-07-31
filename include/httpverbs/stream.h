@@ -60,6 +60,9 @@ private:
 	std::streambuf* p_;
 };
 
+namespace keywords
+{
+
 auto from_stream(std::istream& is)
 	-> _request_sgetn_cb
 {
@@ -70,6 +73,8 @@ auto to_stream(std::ostream& os)
 	-> _request_sputn_cb
 {
 	return _request_sputn_cb(os.rdbuf());
+}
+
 }
 
 }

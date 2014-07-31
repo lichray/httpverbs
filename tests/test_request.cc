@@ -48,17 +48,3 @@ TEST_CASE("request comparison", "[objects]")
 	REQUIRE(req2 == req2);
 	REQUIRE(req1 != req2);
 }
-
-TEST_CASE("of_length as a safe curl_off_t carrier", "[objects]")
-{
-	using httpverbs::of_length;
-
-	CHECK(curl_off_t(of_length(-1).value()) == CURL_OFF_T_C(-1));
-	CHECK(curl_off_t(of_length(2147483647L).value()) ==
-	    CURL_OFF_T_C(2147483647));
-	CHECK(curl_off_t(of_length(size_t(2147483648UL)).value()) ==
-	    CURL_OFF_T_C(2147483648));
-
-	if (sizeof(size_t) == sizeof(curl_off_t))
-		CHECK_THROWS(of_length(size_t(-1)));
-}

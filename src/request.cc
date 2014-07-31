@@ -28,8 +28,6 @@
 #include <httpverbs/exceptions.h>
 
 #include "pooled_perform.h"
-
-#include <stdexcept>
 #include "stdex/string_view.h"
 
 namespace httpverbs
@@ -71,7 +69,7 @@ request::request(char const* method, std::string url) :
 response request::perform()
 {
 	stdex::string_view sv = data;
-	setup_request_body_from_bytes(&sv, of_length(sv.size()));
+	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
 	setup_response_body_to_string(&resp.content);
@@ -81,12 +79,7 @@ response request::perform()
 	return resp;
 }
 
-of_length::of_length(size_t n) :
-	v_(n <= INT64_MAX ? n :
-	    throw std::length_error("larger then curl_off_t"))
-{}
-
-response request::perform(callback_t reader, of_length n, callback_t writer)
+response request::perform(length_t n, callback_t reader, callback_t writer)
 {
 	response resp;
 	setup_request_body_from_callback(&reader, n);
@@ -97,7 +90,7 @@ response request::perform(callback_t reader, of_length n, callback_t writer)
 	return resp;
 }
 
-response request::perform(callback_t reader, of_length n, to_content_t)
+response request::perform(length_t n, callback_t reader)
 {
 	response resp;
 	setup_request_body_from_callback(&reader, n);
@@ -108,7 +101,7 @@ response request::perform(callback_t reader, of_length n, to_content_t)
 	return resp;
 }
 
-response request::perform(callback_t reader, of_length n,
+response request::perform(length_t n, callback_t reader,
     ignoring_response_body_t)
 {
 	response resp;
@@ -120,10 +113,10 @@ response request::perform(callback_t reader, of_length n,
 	return resp;
 }
 
-response request::perform(from_data_t, callback_t writer)
+response request::perform(callback_t writer)
 {
 	stdex::string_view sv = data;
-	setup_request_body_from_bytes(&sv, of_length(sv.size()));
+	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
 	setup_response_body_to_callback(&writer);
@@ -133,15 +126,10 @@ response request::perform(from_data_t, callback_t writer)
 	return resp;
 }
 
-response request::perform(from_data_t, to_content_t)
-{
-	return perform();
-}
-
-response request::perform(from_data_t, ignoring_response_body_t)
+response request::perform(ignoring_response_body_t)
 {
 	stdex::string_view sv = data;
-	setup_request_body_from_bytes(&sv, of_length(sv.size()));
+	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
 	setup_response_body_ignored();
@@ -151,9 +139,9 @@ response request::perform(from_data_t, ignoring_response_body_t)
 	return resp;
 }
 
-void request::setup_request_body_from_bytes(void* p, of_length n)
+void request::setup_request_body_from_bytes(void* p, length_t n)
 {
-	auto sz = curl_off_t(n.value());
+	auto sz = curl_off_t(n);
 
 	if (sz != 0)
 	{
@@ -171,9 +159,9 @@ void request::setup_response_body_to_string(void* p)
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
 }
 
-void request::setup_request_body_from_callback(void* p, of_length n)
+void request::setup_request_body_from_callback(void* p, length_t n)
 {
-	auto sz = curl_off_t(n.value());
+	auto sz = curl_off_t(n);
 
 	if (sz != 0)
 	{

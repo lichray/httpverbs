@@ -14,11 +14,7 @@
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
 
-using httpverbs::from_stream;
-using httpverbs::to_stream;
-using httpverbs::from_c_file;
-using httpverbs::to_c_file;
-using httpverbs::of_length;
+using namespace httpverbs::keywords;
 
 TEST_CASE("C++ streams library support", "[network]")
 {
@@ -27,7 +23,7 @@ TEST_CASE("C++ streams library support", "[network]")
 	std::ostringstream out;
 
 	auto req = httpverbs::request("ECHO", host);
-	auto resp = req.perform(from_stream(in), of_length(nbytes),
+	auto resp = req.perform(nbytes, from_stream(in),
 	    to_stream(out));
 
 	REQUIRE(out.str().size() == nbytes);
@@ -87,7 +83,7 @@ TEST_CASE("C stdio library support", "[network][diskio]")
 		defer(fclose(out));
 
 		auto req = httpverbs::request("ECHO", host);
-		auto resp = req.perform(from_c_file(in), of_length(nbytes),
+		auto resp = req.perform(nbytes, from_c_file(in),
 		    to_c_file(out));
 	}
 

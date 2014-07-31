@@ -135,7 +135,7 @@ inline
 response head(std::string url)
 {
 	return request("HEAD", std::move(url)).perform(
-	    from_data, ignoring_response_body);
+	    keywords::ignoring_response_body);
 }
 
 inline
@@ -144,7 +144,7 @@ response head(std::string url, header_dict headers)
 	auto req = request("HEAD", std::move(url));
 	req.headers = std::move(headers);
 
-	return req.perform(from_data, ignoring_response_body);
+	return req.perform(keywords::ignoring_response_body);
 }
 
 inline

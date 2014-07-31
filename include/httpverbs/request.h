@@ -32,30 +32,19 @@
 #include <memory>
 #include <cstdint>
 #include <functional>
+#include <stdexcept>
 
 namespace httpverbs
 {
 
-const struct from_data_t {} from_data = {};
-const struct to_content_t {} to_content = {};
-const struct ignoring_response_body_t {} ignoring_response_body = {};
+struct ignoring_response_body_t {};
 
-struct of_length
+namespace keywords
 {
-	explicit of_length(int n) : v_(n)
-	{}
 
-	explicit of_length(long n) : v_(n)
-	{}
+const struct ignoring_response_body_t ignoring_response_body = {};
 
-	explicit of_length(long long n);
-	explicit of_length(size_t n);
-
-	int64_t value() const;
-
-private:
-	int64_t v_;
-};
+}
 
 struct response;
 
@@ -70,7 +59,8 @@ private:
 	std::unique_ptr<void, _curl_handle_deleter> handle_;
 
 public:
-	typedef std::function<size_t(char*, size_t)> callback_t;
+	typedef std::function<size_t(char*, size_t)>	callback_t;
+	typedef long long				length_t;
 
 	std::string url;
 	header_dict headers;
@@ -97,37 +87,24 @@ public:
 	}
 
 	response perform();
-	response perform(from_data_t, to_content_t);
-	response perform(from_data_t, callback_t writer);
-	response perform(from_data_t, ignoring_response_body_t);
-	response perform(callback_t reader, of_length n, to_content_t);
-	response perform(callback_t reader, of_length n, callback_t writer);
-	response perform(callback_t reader, of_length n,
+	response perform(callback_t writer);
+	response perform(ignoring_response_body_t);
+	response perform(length_t n, callback_t reader);
+	response perform(length_t n, callback_t reader, callback_t writer);
+	response perform(length_t n, callback_t reader,
 	    ignoring_response_body_t);
 
 private:
 	request(request const&);  // = delete
 
-	void setup_request_body_from_bytes(void* p, of_length n);
-	void setup_request_body_from_callback(void* p, of_length n);
+	void setup_request_body_from_bytes(void* p, length_t n);
+	void setup_request_body_from_callback(void* p, length_t n);
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
 	void setup_response_body_ignored();
 	void setup_response_headers(void* p);
 	void perform_on(response& resp);
 };
-
-inline
-of_length::of_length(long long n) : v_(n)
-{
-	static_assert(sizeof(n) <= sizeof(v_), "bug me if you see this");
-}
-
-inline
-int64_t of_length::value() const
-{
-	return v_;
-}
 
 inline
 request::request(request&& other) :
