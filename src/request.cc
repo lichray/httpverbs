@@ -58,8 +58,8 @@ struct headers_parser_stack
 }
 
 request::request(char const* method, std::string url) :
-	url(std::move(url)),
-	handle_(curl_easy_init())
+	handle_(curl_easy_init()),
+	url(std::move(url))
 {
 	if (handle_ == nullptr)
 		throw bad_request();

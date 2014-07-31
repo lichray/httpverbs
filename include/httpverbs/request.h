@@ -61,6 +61,15 @@ struct response;
 
 struct request
 {
+private:
+	struct _curl_handle_deleter
+	{
+		void operator()(void*) const;
+	};
+
+	std::unique_ptr<void, _curl_handle_deleter> handle_;
+
+public:
 	typedef std::function<size_t(char*, size_t)> callback_t;
 
 	std::string url;
@@ -106,13 +115,6 @@ private:
 	void setup_response_body_ignored();
 	void setup_response_headers(void* p);
 	void perform_on(response& resp);
-
-	struct _curl_handle_deleter
-	{
-		void operator()(void*) const;
-	};
-
-	std::unique_ptr<void, _curl_handle_deleter> handle_;
 };
 
 inline
@@ -129,10 +131,10 @@ int64_t of_length::value() const
 
 inline
 request::request(request&& other) :
+	handle_(std::move(other.handle_)),
 	url(std::move(other.url)),
 	headers(std::move(other.headers)),
-	data(std::move(other.data)),
-	handle_(std::move(other.handle_))
+	data(std::move(other.data))
 {}
 
 inline
@@ -148,10 +150,10 @@ void swap(request& a, request& b)
 {
 	using std::swap;
 
+	swap(a.handle_, b.handle_);
 	swap(a.url, b.url);
 	swap(a.headers, b.headers);
 	swap(a.data, b.data);
-	swap(a.handle_, b.handle_);
 }
 
 }
