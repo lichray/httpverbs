@@ -27,6 +27,8 @@
 #include <httpverbs/response.h>
 #include <httpverbs/exceptions.h>
 
+#include <boost/assert.hpp>
+
 #include "pooled_perform.h"
 #include "stdex/string_view.h"
 
@@ -283,8 +285,7 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 {
 	auto& sk = *reinterpret_cast<headers_parser_stack*>(to);
 
-	if (sz * nmemb < 2)
-		throw std::logic_error("libcurl returns malformed header");
+	BOOST_ASSERT_MSG(sz * nmemb >= 2, "libcurl returns malformed header");
 
 	// skip the first line
 	if (not sk.done_status_line)

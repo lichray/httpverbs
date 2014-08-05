@@ -98,7 +98,7 @@ SCENARIO("header_dict can handle multi-header", "[objects]")
 
 			THEN("all headers with that name gone")
 			{
-				REQUIRE_THROWS(hdr["multi-header"]);
+				REQUIRE_FALSE(hdr.get("multi-header"));
 				REQUIRE(hdr.size() == 2);
 			}
 		}

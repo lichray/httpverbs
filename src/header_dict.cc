@@ -27,6 +27,8 @@
 
 #include "config.h"
 
+#include <boost/assert.hpp>
+
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -198,8 +200,7 @@ auto header_dict::operator[](char const* name) const -> value_type
 	auto name_len = strlen(name);
 	auto hr = header_range(hlist_, name, name_len);
 
-	if (hr.first == hr.second)
-		throw std::out_of_range("no such header");
+	BOOST_ASSERT_MSG(hr.first != hr.second, "no such header");
 
 	return join_trimmed_values(hr.first, hr.second, name_len);
 }
