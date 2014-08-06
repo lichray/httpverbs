@@ -3,9 +3,7 @@ project(httpverbs)
 enable_testing()
 
 include(CTest)
-include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
-include(CheckFunctionExists)
 include(CheckCXXSourceCompiles)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
@@ -16,8 +14,6 @@ option(PER_THREAD_CACHE "Enable per-thread connection pool" ON)
 option(USE_BOOST_CHRONO "Use Boost.Chrono instead of C++11 <chrono>" OFF)
 option(USE_BOOST_TSS    "Use Boost TSS instead of C++11 thread_local" OFF)
 
-CHECK_INCLUDE_FILES(strings.h HAVE_STRINGS_H)
-CHECK_FUNCTION_EXISTS(_stricmp HAVE__STRICMP)
 configure_file(src/config.h.in ${CMAKE_SOURCE_DIR}/src/config.h)
 
 if(BUILD_TESTING)

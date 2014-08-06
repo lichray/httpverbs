@@ -32,17 +32,7 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
-#include <stdexcept>
 #include <string.h>
-
-#if defined(HAVE_STRINGS_H)
-#include <strings.h>
-#else
-# if defined(HAVE__STRICMP)
-# define strcasecmp	_stricmp
-# define strncasecmp	_strnicmp
-# endif
-#endif
 
 namespace httpverbs
 {
@@ -53,17 +43,17 @@ namespace
 struct header_compare
 {
 	explicit header_compare(size_t name_len) :
-		name_len(name_len)
+		name_len_(name_len)
 	{}
 
 	bool operator()(std::string const& a, char const* b)
 	{
-		return b_cmp(a.data(), a.find(':'), b, name_len);
+		return b_cmp(a.data(), a.find(':'), b, name_len_);
 	}
 
 	bool operator()(char const* a, std::string const& b)
 	{
-		return b_cmp(a, name_len, b.data(), b.find(':'));
+		return b_cmp(a, name_len_, b.data(), b.find(':'));
 	}
 
 	bool operator()(std::string const& a, std::string const& b)
@@ -75,16 +65,20 @@ private:
 	static
 	bool b_cmp(char const* a, size_t alen, char const* b, size_t blen)
 	{
-		auto rlen = std::min(alen, blen);
-		auto r = strncasecmp(a, b, rlen);
-
-		if (r == 0)
-			return alen < blen;
-		else
-			return r < 0;
+		return std::lexicographical_compare(a, a + alen, b, b + blen,
+		    [](char a, char b) -> bool
+		    {
+			return tolower_li(a) < tolower_li(b);
+		    });
 	}
 
-	size_t name_len;
+	static
+	int tolower_li(int c)
+	{
+		return (('A' <= c && c <= 'Z') ? (c | ('a' - 'A')) : c);
+	}
+
+	size_t name_len_;
 };
 
 }
