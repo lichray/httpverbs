@@ -30,7 +30,6 @@
 #include <boost/assert.hpp>
 
 #include "pooled_perform.h"
-#include "stdex/string_view.h"
 
 namespace httpverbs
 {
@@ -70,7 +69,7 @@ request::request(char const* method, std::string url) :
 
 response request::perform()
 {
-	stdex::string_view sv = data;
+	auto sv = keywords::data_from(data);
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
@@ -117,7 +116,7 @@ response request::perform(length_t n, callback_t reader,
 
 response request::perform(callback_t writer)
 {
-	stdex::string_view sv = data;
+	auto sv = keywords::data_from(data);
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
@@ -130,7 +129,7 @@ response request::perform(callback_t writer)
 
 response request::perform(ignoring_response_body_t)
 {
-	stdex::string_view sv = data;
+	auto sv = keywords::data_from(data);
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
@@ -259,7 +258,7 @@ void request::perform_on(response& resp)
 
 size_t read_string(char* to, size_t sz, size_t nmemb, void* from)
 {
-	auto& sv = *reinterpret_cast<stdex::string_view*>(from);
+	auto& sv = *reinterpret_cast<_mini_string_ref*>(from);
 
 	auto copied_size = sv.copy(to, sz * nmemb);
 	sv.remove_prefix(copied_size);

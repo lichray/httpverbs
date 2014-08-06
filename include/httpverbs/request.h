@@ -39,12 +39,50 @@ namespace httpverbs
 
 struct ignoring_response_body_t {};
 
+struct _mini_string_ref;
+
 namespace keywords
 {
 
 const struct ignoring_response_body_t ignoring_response_body = {};
 
+_mini_string_ref data_from(char const*);
+_mini_string_ref data_from(char const*, size_t);
+
+template <typename StringLike>
+_mini_string_ref data_from(StringLike const&);
+
 }
+
+struct _mini_string_ref
+{
+	char const* data() const
+	{
+		return it_;
+	}
+
+	size_t size() const
+	{
+		return sz_;
+	}
+
+	size_t copy(char* s, size_t n) const;
+	void remove_prefix(size_t n);
+
+private:
+	friend _mini_string_ref keywords::data_from(char const*);
+	friend _mini_string_ref keywords::data_from(char const*, size_t);
+
+	template <typename StringLike>
+	friend _mini_string_ref keywords::data_from(StringLike const&);
+
+	_mini_string_ref(char const* str, size_t len) :
+		it_(str), sz_(len)
+	{}
+
+	char const* it_;
+	size_t sz_;
+};
 
 struct response;
 
@@ -131,6 +169,47 @@ void swap(request& a, request& b)
 	swap(a.url, b.url);
 	swap(a.headers, b.headers);
 	swap(a.data, b.data);
+}
+
+namespace keywords
+{
+
+inline
+_mini_string_ref data_from(char const* str)
+{
+	return data_from(str, std::char_traits<char>::length(str));
+}
+
+inline
+_mini_string_ref data_from(char const* str, size_t len)
+{
+	return _mini_string_ref(str, len);
+}
+
+template <typename StringLike>
+inline
+_mini_string_ref data_from(StringLike const& str)
+{
+	return data_from(str.data(), str.size());
+}
+
+}
+
+inline
+size_t _mini_string_ref::copy(char* s, size_t n) const
+{
+	auto rlen = n < size() ? n : size();
+
+	std::char_traits<char>::copy(s, data(), rlen);
+
+	return rlen;
+}
+
+inline
+void _mini_string_ref::remove_prefix(size_t n)
+{
+	it_ += n;
+	sz_ -= n;
 }
 
 }
