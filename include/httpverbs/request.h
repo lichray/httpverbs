@@ -26,7 +26,7 @@
 #ifndef HTTPVERBS_REQUEST_H
 #define HTTPVERBS_REQUEST_H
 
-#include "header_dict.h"
+#include "response.h"
 
 #include <string>
 #include <memory>
@@ -83,8 +83,6 @@ private:
 	char const* it_;
 	size_t sz_;
 };
-
-struct response;
 
 struct request
 {
@@ -172,6 +170,100 @@ void swap(request& a, request& b)
 	swap(a.url, b.url);
 	swap(a.headers, b.headers);
 	swap(a.data, b.data);
+}
+
+inline
+response request::perform()
+{
+	return perform(keywords::data_from(data));
+}
+
+inline
+response request::perform(callback_t writer)
+{
+	return perform(keywords::data_from(data), std::move(writer));
+}
+
+inline
+response request::perform(ignoring_response_body_t kw)
+{
+	return perform(keywords::data_from(data), kw);
+}
+
+inline
+response request::perform(_mini_string_ref sv)
+{
+	setup_request_body_from_bytes(&sv, sv.size());
+
+	response resp;
+	setup_response_body_to_string(&resp.content);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+inline
+response request::perform(_mini_string_ref sv, callback_t writer)
+{
+	setup_request_body_from_bytes(&sv, sv.size());
+
+	response resp;
+	setup_response_body_to_callback(&writer);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+inline
+response request::perform(_mini_string_ref sv, ignoring_response_body_t)
+{
+	setup_request_body_from_bytes(&sv, sv.size());
+
+	response resp;
+	setup_response_body_ignored();
+
+	perform_on(resp);
+
+	return resp;
+}
+
+inline
+response request::perform(length_t n, callback_t reader)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_to_string(&resp.content);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+inline
+response request::perform(length_t n, callback_t reader, callback_t writer)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_to_callback(&writer);
+
+	perform_on(resp);
+
+	return resp;
+}
+
+inline
+response request::perform(length_t n, callback_t reader,
+    ignoring_response_body_t)
+{
+	response resp;
+	setup_request_body_from_callback(&reader, n);
+	setup_response_body_ignored();
+
+	perform_on(resp);
+
+	return resp;
 }
 
 namespace keywords

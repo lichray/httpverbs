@@ -24,7 +24,6 @@
  */
 
 #include <httpverbs/request.h>
-#include <httpverbs/response.h>
 #include <httpverbs/exceptions.h>
 
 #include <boost/assert.hpp>
@@ -65,91 +64,6 @@ request::request(char const* method, std::string url) :
 
 	if (curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method))
 		throw bad_request();
-}
-
-response request::perform()
-{
-	return perform(keywords::data_from(data));
-}
-
-response request::perform(_mini_string_ref sv)
-{
-	setup_request_body_from_bytes(&sv, sv.size());
-
-	response resp;
-	setup_response_body_to_string(&resp.content);
-
-	perform_on(resp);
-
-	return resp;
-}
-
-response request::perform(length_t n, callback_t reader, callback_t writer)
-{
-	response resp;
-	setup_request_body_from_callback(&reader, n);
-	setup_response_body_to_callback(&writer);
-
-	perform_on(resp);
-
-	return resp;
-}
-
-response request::perform(length_t n, callback_t reader)
-{
-	response resp;
-	setup_request_body_from_callback(&reader, n);
-	setup_response_body_to_string(&resp.content);
-
-	perform_on(resp);
-
-	return resp;
-}
-
-response request::perform(length_t n, callback_t reader,
-    ignoring_response_body_t)
-{
-	response resp;
-	setup_request_body_from_callback(&reader, n);
-	setup_response_body_ignored();
-
-	perform_on(resp);
-
-	return resp;
-}
-
-response request::perform(callback_t writer)
-{
-	return perform(keywords::data_from(data), std::move(writer));
-}
-
-response request::perform(_mini_string_ref sv, callback_t writer)
-{
-	setup_request_body_from_bytes(&sv, sv.size());
-
-	response resp;
-	setup_response_body_to_callback(&writer);
-
-	perform_on(resp);
-
-	return resp;
-}
-
-response request::perform(ignoring_response_body_t kw)
-{
-	return perform(keywords::data_from(data), kw);
-}
-
-response request::perform(_mini_string_ref sv, ignoring_response_body_t)
-{
-	setup_request_body_from_bytes(&sv, sv.size());
-
-	response resp;
-	setup_response_body_ignored();
-
-	perform_on(resp);
-
-	return resp;
 }
 
 void request::setup_request_body_from_bytes(void* p, length_t n)

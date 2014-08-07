@@ -28,7 +28,6 @@
 
 #include "enable_library.h"
 #include "request.h"
-#include "response.h"
 
 namespace httpverbs
 {
