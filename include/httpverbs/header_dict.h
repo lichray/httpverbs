@@ -27,9 +27,12 @@
 #define HTTPVERBS_HEADER__DICT_H
 
 #include <boost/optional.hpp>
+#include <boost/assert.hpp>
 
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 #if defined(_MSC_VER)
 #define NOMINMAX
@@ -48,8 +51,8 @@ private:
 public:
 	typedef _Rep::value_type	value_type;
 	typedef _Rep::size_type		size_type;
+	typedef _Rep::iterator		iterator;
 	typedef _Rep::const_iterator	const_iterator;
-	typedef const_iterator		iterator;
 
 	header_dict() {}
 
@@ -99,6 +102,18 @@ public:
 
 private:
 	void add_line_split_at(std::string header, size_t pos);
+
+	auto next_position(char const* name, size_t name_len)
+		-> iterator;
+	auto matched_range(char const* name, size_t name_len)
+		-> std::pair<iterator, iterator>;
+	auto matched_range(char const* name, size_t name_len) const
+		-> std::pair<const_iterator, const_iterator>;
+
+	static std::string fields_joined(char const*, size_t, char const*,
+	    size_t);
+	static value_type joined_field_values(const_iterator, const_iterator,
+	    size_t);
 };
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
@@ -195,6 +210,218 @@ inline
 auto header_dict::size() const -> size_type
 {
 	return hlist_.size();
+}
+
+inline
+void header_dict::add(char const* name, char const* value)
+{
+	auto nl = std::char_traits<char>::length(name);
+	auto vl = std::char_traits<char>::length(value);
+
+	add_line_split_at(fields_joined(name, nl, value, vl), nl);
+}
+
+inline
+void header_dict::add(std::string header)
+{
+	auto pos = header.find(':');
+
+	if (pos == std::string::npos)
+		return;
+
+	add_line_split_at(std::move(header), pos);
+}
+
+inline
+auto header_dict::operator[](char const* name) const -> value_type
+{
+	auto name_len = std::char_traits<char>::length(name);
+	auto hr = matched_range(name, name_len);
+
+	BOOST_ASSERT_MSG(hr.first != hr.second, "no such header");
+
+	return joined_field_values(hr.first, hr.second, name_len);
+}
+
+inline
+auto header_dict::get(char const* name) const -> boost::optional<value_type>
+{
+	auto name_len = std::char_traits<char>::length(name);
+	auto hr = matched_range(name, name_len);
+
+	if (hr.first == hr.second)
+		return boost::none;
+
+	return joined_field_values(hr.first, hr.second, name_len);
+}
+
+inline
+void header_dict::set(char const* name, char const* value)
+{
+	auto nl = std::char_traits<char>::length(name);
+	auto vl = std::char_traits<char>::length(value);
+	auto hr = matched_range(name, nl);
+
+	if (hr.first == hr.second)
+		hlist_.insert(hr.first, fields_joined(name, nl, value, vl));
+	else
+	{
+		hr.first->replace(nl + 1, -1, 1, ' ').append(value, vl);
+		++hr.first;
+		hlist_.erase(hr.first, hr.second);
+	}
+}
+
+inline
+auto header_dict::erase(char const* name) -> size_type
+{
+	auto hr = matched_range(name, std::char_traits<char>::length(name));
+	auto diff = hr.second - hr.first;
+
+	hlist_.erase(hr.first, hr.second);
+
+	return diff;
+}
+
+inline
+void header_dict::add_line_split_at(std::string header, size_t pos)
+{
+	auto it = next_position(header.data(), pos);
+
+	hlist_.insert(it, std::move(header));
+}
+
+inline
+std::string header_dict::fields_joined(char const* a, size_t alen,
+    char const* b, size_t blen)
+{
+	std::string header;
+
+	header.reserve(alen + 2 + blen);
+	header.append(a, alen).append(": ").append(b, blen);
+
+	return header;
+}
+
+namespace
+{
+
+struct _header_compare
+{
+	explicit _header_compare(size_t name_len) :
+		name_len_(name_len)
+	{}
+
+	bool operator()(std::string const& a, char const* b)
+	{
+		return b_cmp(a.data(), a.find(':'), b, name_len_);
+	}
+
+	bool operator()(char const* a, std::string const& b)
+	{
+		return b_cmp(a, name_len_, b.data(), b.find(':'));
+	}
+
+	bool operator()(std::string const& a, std::string const& b)
+	{
+		return b_cmp(a.data(), a.find(':'), b.data(), b.find(':'));
+	}
+
+private:
+	static
+	bool b_cmp(char const* a, size_t alen, char const* b,
+	    size_t blen)
+	{
+		return std::lexicographical_compare(a, a + alen, b, b + blen,
+		    [](char a, char b) -> bool
+		    {
+			return tolower_li(a) < tolower_li(b);
+		    });
+	}
+
+	static
+	int tolower_li(int c)
+	{
+		return ('A' <= c && c <= 'Z') ? (c | ('a' - 'A')) : c;
+	}
+
+	size_t name_len_;
+};
+
+}
+
+inline
+auto header_dict::next_position(char const* name, size_t name_len)
+	-> iterator
+{
+	return std::upper_bound(begin(hlist_), end(hlist_), name,
+	    _header_compare(name_len));
+}
+
+inline
+auto header_dict::matched_range(char const* name, size_t name_len)
+	-> std::pair<iterator, iterator>
+{
+	return std::equal_range(begin(hlist_), end(hlist_), name,
+	    _header_compare(name_len));
+}
+
+inline
+auto header_dict::matched_range(char const* name, size_t name_len) const
+	-> std::pair<const_iterator, const_iterator>
+{
+	return std::equal_range(begin(hlist_), end(hlist_), name,
+	    _header_compare(name_len));
+}
+
+template <typename Iter>
+inline
+auto make_reverse_iterator(Iter it)
+	-> std::reverse_iterator<Iter>
+{
+	return std::reverse_iterator<Iter>(it);
+}
+
+template <typename BidirIt>
+inline
+auto trimmed_range(BidirIt first, BidirIt last)
+	-> std::pair<BidirIt, BidirIt>
+{
+	// it's libcurl's job to concatenate multi-line headers,
+	// so HTTP LWS actually means SP and HT here
+	auto is_LWS = [](char c)
+	{
+		return c == ' ' or c == '\t';
+	};
+
+	// trim
+	auto fc_b = std::find_if_not(first, last, is_LWS);
+	auto fc_e = std::find_if_not(make_reverse_iterator(last),
+	    make_reverse_iterator(fc_b), is_LWS).base();
+
+	return std::pair<BidirIt, BidirIt>(fc_b, fc_e);
+}
+
+inline
+auto header_dict::joined_field_values(const_iterator first,
+    const_iterator last, size_t name_len)
+	-> value_type
+{
+	std::string v;
+	auto it = first;
+
+	while (1)
+	{
+		auto fc = trimmed_range(begin(*it) + name_len + 1, end(*it));
+		v.append(fc.first, fc.second);
+
+		if (++it != last)
+			v.append(", ");
+		else
+			break;
+	}
+
+	return v;
 }
 
 }
