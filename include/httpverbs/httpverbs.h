@@ -55,12 +55,9 @@ response put(std::string url)
 }
 
 inline
-response put(std::string url, std::string data)
+response put(std::string url, _mini_string_ref data)
 {
-	auto req = request("PUT", std::move(url));
-	req.data = std::move(data);
-
-	return req.perform();
+	return request("PUT", std::move(url)).perform(data);
 }
 
 inline
@@ -73,13 +70,12 @@ response put(std::string url, header_dict headers)
 }
 
 inline
-response put(std::string url, header_dict headers, std::string data)
+response put(std::string url, header_dict headers, _mini_string_ref data)
 {
 	auto req = request("PUT", std::move(url));
 	req.headers = std::move(headers);
-	req.data = std::move(data);
 
-	return req.perform();
+	return req.perform(data);
 }
 
 inline
@@ -89,12 +85,9 @@ response post(std::string url)
 }
 
 inline
-response post(std::string url, std::string data)
+response post(std::string url, _mini_string_ref data)
 {
-	auto req = request("POST", std::move(url));
-	req.data = std::move(data);
-
-	return req.perform();
+	return request("POST", std::move(url)).perform(data);
 }
 
 inline
@@ -107,13 +100,12 @@ response post(std::string url, header_dict headers)
 }
 
 inline
-response post(std::string url, header_dict headers, std::string data)
+response post(std::string url, header_dict headers, _mini_string_ref data)
 {
 	auto req = request("POST", std::move(url));
 	req.headers = std::move(headers);
-	req.data = std::move(data);
 
-	return req.perform();
+	return req.perform(data);
 }
 
 inline
@@ -169,12 +161,9 @@ response patch(std::string url)
 }
 
 inline
-response patch(std::string url, std::string data)
+response patch(std::string url, _mini_string_ref data)
 {
-	auto req = request("PATCH", std::move(url));
-	req.data = std::move(data);
-
-	return req.perform();
+	return request("PATCH", std::move(url)).perform(data);
 }
 
 inline
@@ -187,13 +176,12 @@ response patch(std::string url, header_dict headers)
 }
 
 inline
-response patch(std::string url, header_dict headers, std::string data)
+response patch(std::string url, header_dict headers, _mini_string_ref data)
 {
 	auto req = request("PATCH", std::move(url));
 	req.headers = std::move(headers);
-	req.data = std::move(data);
 
-	return req.perform();
+	return req.perform(data);
 }
 
 }

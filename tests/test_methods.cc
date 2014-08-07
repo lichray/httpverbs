@@ -7,11 +7,13 @@ httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";
 auto k = host + "k";
 
+using namespace httpverbs::keywords;
+
 TEST_CASE("CRUD operations", "[network]")
 {
 	SECTION("create")
 	{
-		auto resp = httpverbs::put(k, "ZONE//ALONE");
+		auto resp = httpverbs::put(k, data_from("ZONE//ALONE"));
 
 		REQUIRE(resp.status_code == 201);
 	}
@@ -92,7 +94,8 @@ TEST_CASE("header overloads", "[network]")
 		auto hdr = httpverbs::header_dict();
 		hdr.add("content-type: text/html");
 
-		auto resp = httpverbs::put(k, hdr, "<p>TERMINATED</p>");
+		auto resp = httpverbs::put(k, hdr,
+		    data_from("<p>TERMINATED</p>"));
 
 		REQUIRE(resp.status_code == 400);
 	}

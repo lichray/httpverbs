@@ -69,7 +69,11 @@ request::request(char const* method, std::string url) :
 
 response request::perform()
 {
-	auto sv = keywords::data_from(data);
+	return perform(keywords::data_from(data));
+}
+
+response request::perform(_mini_string_ref sv)
+{
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
@@ -116,7 +120,11 @@ response request::perform(length_t n, callback_t reader,
 
 response request::perform(callback_t writer)
 {
-	auto sv = keywords::data_from(data);
+	return perform(keywords::data_from(data), std::move(writer));
+}
+
+response request::perform(_mini_string_ref sv, callback_t writer)
+{
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;
@@ -127,9 +135,13 @@ response request::perform(callback_t writer)
 	return resp;
 }
 
-response request::perform(ignoring_response_body_t)
+response request::perform(ignoring_response_body_t kw)
 {
-	auto sv = keywords::data_from(data);
+	return perform(keywords::data_from(data), kw);
+}
+
+response request::perform(_mini_string_ref sv, ignoring_response_body_t)
+{
 	setup_request_body_from_bytes(&sv, sv.size());
 
 	response resp;

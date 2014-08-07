@@ -127,6 +127,9 @@ public:
 	response perform();
 	response perform(callback_t writer);
 	response perform(ignoring_response_body_t);
+	response perform(_mini_string_ref);
+	response perform(_mini_string_ref, callback_t writer);
+	response perform(_mini_string_ref, ignoring_response_body_t);
 	response perform(length_t n, callback_t reader);
 	response perform(length_t n, callback_t reader, callback_t writer);
 	response perform(length_t n, callback_t reader,
