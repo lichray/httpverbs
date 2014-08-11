@@ -333,7 +333,7 @@ private:
 	    size_t blen)
 	{
 		return std::lexicographical_compare(a, a + alen, b, b + blen,
-		    [](char a, char b) -> bool
+		    [](char a, char b)
 		    {
 			return tolower_li(a) < tolower_li(b);
 		    });
