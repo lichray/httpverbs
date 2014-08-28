@@ -111,10 +111,11 @@ void request::setup_response_body_ignored()
 	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }
 
-void request::setup_response_headers(void* p)
+inline
+void setup_response_headers(CURL* handle, void* p)
 {
-	curl_easy_setopt(handle_.get(), CURLOPT_HEADERFUNCTION, fill_headers);
-	curl_easy_setopt(handle_.get(), CURLOPT_HEADERDATA, p);
+	curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, fill_headers);
+	curl_easy_setopt(handle, CURLOPT_HEADERDATA, p);
 }
 
 template <typename T, size_t N>
@@ -166,7 +167,7 @@ void request::perform_on(response& resp)
 	}
 
 	headers_parser_stack sk = { false, false, resp.headers };
-	setup_response_headers(&sk);
+	setup_response_headers(handle_.get(), &sk);
 
 	auto r = pooled_perform(handle_.get());
 

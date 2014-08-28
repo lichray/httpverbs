@@ -141,7 +141,6 @@ private:
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
 	void setup_response_body_ignored();
-	void setup_response_headers(void* p);
 	void perform_on(response& resp);
 };
 
