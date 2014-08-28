@@ -66,6 +66,24 @@ request::request(char const* method, std::string url) :
 		throw bad_request();
 }
 
+request& request::ignore_response_body()
+{
+	// use a pointer pointing to an invalid location to represent
+	// that the response body is unwanted
+	curl_easy_setopt(handle_.get(), CURLOPT_PRIVATE, "");
+
+	return *this;
+}
+
+inline
+bool response_body_ignored(CURL* handle)
+{
+	char* no_body;
+	curl_easy_getinfo(handle, CURLINFO_PRIVATE, &no_body);
+
+	return no_body != nullptr;
+}
+
 void request::setup_request_body_from_bytes(void* p, length_t n)
 {
 	auto sz = curl_off_t(n);
@@ -82,8 +100,14 @@ void request::setup_request_body_from_bytes(void* p, length_t n)
 
 void request::setup_response_body_to_string(void* p)
 {
-	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, write_string);
-	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
+	if (not response_body_ignored(handle_.get()))
+	{
+		curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION,
+		    write_string);
+		curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
+	}
+	else
+		curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }
 
 void request::setup_request_body_from_callback(void* p, length_t n)
@@ -104,11 +128,6 @@ void request::setup_response_body_to_callback(void* p)
 {
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEFUNCTION, call_function);
 	curl_easy_setopt(handle_.get(), CURLOPT_WRITEDATA, p);
-}
-
-void request::setup_response_body_ignored()
-{
-	curl_easy_setopt(handle_.get(), CURLOPT_NOBODY, 1L);
 }
 
 inline

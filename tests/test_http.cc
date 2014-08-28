@@ -147,7 +147,7 @@ SCENARIO("request can send and receive body", "[objects][network]")
 
 		WHEN("the query performed by ignoring body")
 		{
-			auto resp = req.perform(ignoring_response_body);
+			auto resp = req.ignore_response_body().perform();
 
 			REQUIRE(resp.status_code == 200);
 

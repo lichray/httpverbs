@@ -125,8 +125,8 @@ response delete_(std::string url, header_dict headers)
 inline
 response head(std::string url)
 {
-	return request("HEAD", std::move(url)).perform(
-	    keywords::ignoring_response_body);
+	return request("HEAD", std::move(url))
+	    .ignore_response_body().perform();
 }
 
 inline
@@ -135,7 +135,7 @@ response head(std::string url, header_dict headers)
 	auto req = request("HEAD", std::move(url));
 	req.headers = std::move(headers);
 
-	return req.perform(keywords::ignoring_response_body);
+	return req.ignore_response_body().perform();
 }
 
 inline

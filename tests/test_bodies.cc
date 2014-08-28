@@ -105,15 +105,14 @@ TEST_CASE("other body policies", "[objects][network]")
 		auto req = httpverbs::request("ECHO", host);
 		char s[] = "Let me see what spring is like";
 
-		auto resp = req.perform(
+		auto resp = req.ignore_response_body().perform(
 		    sizeof(s),
 		    [&](char* d, size_t n) -> size_t
 		    {
 			memcpy(d, s, sizeof(s));
 
 			return sizeof(s);
-		    },
-		    ignoring_response_body);
+		    });
 
 		REQUIRE(resp.status_code == 200);
 		REQUIRE(resp.content.empty());

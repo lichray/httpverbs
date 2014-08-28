@@ -37,14 +37,10 @@
 namespace httpverbs
 {
 
-struct ignoring_response_body_t {};
-
 struct _mini_string_ref;
 
 namespace keywords
 {
-
-const struct ignoring_response_body_t ignoring_response_body = {};
 
 _mini_string_ref data_from(char const*);
 _mini_string_ref data_from(char const*, size_t);
@@ -122,16 +118,14 @@ public:
 		return !(a == b);
 	}
 
+	request& ignore_response_body();
+
 	response perform();
 	response perform(callback_t writer);
-	response perform(ignoring_response_body_t);
 	response perform(_mini_string_ref);
 	response perform(_mini_string_ref, callback_t writer);
-	response perform(_mini_string_ref, ignoring_response_body_t);
 	response perform(length_t n, callback_t reader);
 	response perform(length_t n, callback_t reader, callback_t writer);
-	response perform(length_t n, callback_t reader,
-	    ignoring_response_body_t);
 
 private:
 	request(request const&);  // = delete
@@ -140,7 +134,6 @@ private:
 	void setup_request_body_from_callback(void* p, length_t n);
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
-	void setup_response_body_ignored();
 	void perform_on(response& resp);
 };
 
@@ -184,12 +177,6 @@ response request::perform(callback_t writer)
 }
 
 inline
-response request::perform(ignoring_response_body_t kw)
-{
-	return perform(keywords::data_from(data), kw);
-}
-
-inline
 response request::perform(_mini_string_ref sv)
 {
 	setup_request_body_from_bytes(&sv, sv.size());
@@ -216,19 +203,6 @@ response request::perform(_mini_string_ref sv, callback_t writer)
 }
 
 inline
-response request::perform(_mini_string_ref sv, ignoring_response_body_t)
-{
-	setup_request_body_from_bytes(&sv, sv.size());
-
-	response resp;
-	setup_response_body_ignored();
-
-	perform_on(resp);
-
-	return resp;
-}
-
-inline
 response request::perform(length_t n, callback_t reader)
 {
 	response resp;
@@ -246,19 +220,6 @@ response request::perform(length_t n, callback_t reader, callback_t writer)
 	response resp;
 	setup_request_body_from_callback(&reader, n);
 	setup_response_body_to_callback(&writer);
-
-	perform_on(resp);
-
-	return resp;
-}
-
-inline
-response request::perform(length_t n, callback_t reader,
-    ignoring_response_body_t)
-{
-	response resp;
-	setup_request_body_from_callback(&reader, n);
-	setup_response_body_ignored();
 
 	perform_on(resp);
 
