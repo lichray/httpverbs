@@ -49,7 +49,6 @@ namespace
 struct headers_parser_stack
 {
 	bool done_status_line;
-	bool done_final_header_line;
 	header_dict& ls;
 };
 
@@ -64,6 +63,14 @@ request::request(char const* method, std::string url) :
 
 	if (curl_easy_setopt(handle_.get(), CURLOPT_CUSTOMREQUEST, method))
 		throw bad_request();
+}
+
+request& request::allow_redirects()
+{
+	curl_easy_setopt(handle_.get(), CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(handle_.get(), CURLOPT_MAXREDIRS, 5L);
+
+	return *this;
 }
 
 request& request::ignore_response_body()
@@ -185,7 +192,7 @@ void request::perform_on(response& resp)
 		curl_easy_setopt(handle_.get(), CURLOPT_HTTPHEADER, buf);
 	}
 
-	headers_parser_stack sk = { false, false, resp.headers };
+	headers_parser_stack sk = { false, resp.headers };
 	setup_response_headers(handle_.get(), &sk);
 
 	auto r = pooled_perform(handle_.get());
@@ -232,18 +239,19 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 
 	BOOST_ASSERT_MSG(sz * nmemb >= 2, "libcurl returns malformed header");
 
-	// skip the first line
+	// discard headers from the last response, if any, and skip
+	// the first line
 	if (not sk.done_status_line)
 	{
 		sk.done_status_line = true;
+		sk.ls.clear();
 	}
-	// skip the other embedded headers
-	else if (not sk.done_final_header_line)
+	else
 	{
 		auto size_without_CR_LF = sz * nmemb - 2;
 
 		if (size_without_CR_LF == 0)
-			sk.done_final_header_line = true;
+			sk.done_status_line = false;
 		else
 			sk.ls.add(std::string(from, size_without_CR_LF));
 	}

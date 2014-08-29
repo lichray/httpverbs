@@ -77,6 +77,35 @@ TEST_CASE("other methods", "[network]")
 	}
 }
 
+TEST_CASE("redirection", "[objects][network]")
+{
+	SECTION("redirect GET by default")
+	{
+		auto resp = httpverbs::put(host + "vanishment",
+		    data_from("this WORLD!"));
+
+		REQUIRE(resp.status_code == 201);
+
+		auto orig_url = host + "Vanishment";
+		resp = httpverbs::get(orig_url);
+
+		REQUIRE(resp.status_code == 200);
+		REQUIRE(resp.url != orig_url);
+		REQUIRE(resp.headers.get("content-type"));
+		REQUIRE(resp.content == "this WORLD!");
+	}
+
+	SECTION("redirected POST is still POST")
+	{
+		auto req = httpverbs::request("POST", host + "Vanishment");
+		auto resp = req.allow_redirects().perform();
+
+		REQUIRE(resp.status_code == 405);
+		REQUIRE(resp.url != req.url);
+		REQUIRE(resp.headers.get("allow"));
+	}
+}
+
 TEST_CASE("header overloads", "[network]")
 {
 	SECTION("url + headers")

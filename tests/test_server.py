@@ -12,6 +12,9 @@ class StoreHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         try:
+            if self.__redirected_to_lower():
+                return
+
             s = self.__db[self.path[1:]]
             self.send_response(200)
 
@@ -68,11 +71,29 @@ class StoreHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.__set_allowed()
 
+    def do_POST(self):
+        if self.__redirected_to_lower():
+            return
+
+        self.__not_allowed()
+
+    def __redirected_to_lower(self):
+        pe = self.path.lower()
+
+        if self.path != pe:
+            self.send_response(302)
+            self.send_header("Location", ("http://%s:%d" + pe) %
+                             self.server.server_address)
+            self.end_headers()
+
+            return True
+        else:
+            return False
+
     def __not_allowed(self):
         self.send_response(405)
         self.__set_allowed()
 
-    do_POST = __not_allowed
     do_PATCH = __not_allowed
 
     def __set_allowed(self):

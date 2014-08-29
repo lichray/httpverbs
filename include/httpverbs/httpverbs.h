@@ -35,7 +35,8 @@ namespace httpverbs
 inline
 response get(std::string url)
 {
-	return request("GET", std::move(url)).perform();
+	return request("GET", std::move(url))
+	    .allow_redirects().perform();
 }
 
 inline
@@ -44,7 +45,7 @@ response get(std::string url, header_dict headers)
 	auto req = request("GET", std::move(url));
 	req.headers = std::move(headers);
 
-	return req.perform();
+	return req.allow_redirects().perform();
 }
 
 inline

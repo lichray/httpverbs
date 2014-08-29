@@ -118,6 +118,7 @@ public:
 		return !(a == b);
 	}
 
+	request& allow_redirects();
 	request& ignore_response_body();
 
 	response perform();

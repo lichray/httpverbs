@@ -94,6 +94,8 @@ public:
 	size_type erase(char const* name);
 	size_type erase(std::string const& name);
 
+	void clear();
+
 	friend const_iterator begin(header_dict const& d);
 	friend const_iterator end(header_dict const& d);
 
@@ -186,6 +188,12 @@ inline
 auto header_dict::erase(std::string const& name) -> size_type
 {
 	return erase(name.data());
+}
+
+inline
+void header_dict::clear()
+{
+	hlist_.clear();
 }
 
 inline
