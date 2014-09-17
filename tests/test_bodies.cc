@@ -18,12 +18,12 @@ TEST_CASE("string to string body r/w", "[network][mass]")
 	for (int i = 0; i < 50; ++i)
 	{
 		auto arr = get_random_block();
-		req.data.append(arr.data(), arr.size());
+		req.content.append(arr.data(), arr.size());
 	}
 
 	auto resp = req.perform();
 
-	CHECK(resp.content == req.data);
+	CHECK(resp.content == req.content);
 }
 
 TEST_CASE("callback to callback body r/w", "[network][mass]")
@@ -68,7 +68,7 @@ TEST_CASE("other body policies", "[objects][network]")
 	SECTION("from data to callback")
 	{
 		auto req = httpverbs::request("ECHO", host);
-		req.data = "Fly me to the moon";
+		req.content = "Fly me to the moon";
 
 		sha1 h;
 
@@ -80,7 +80,7 @@ TEST_CASE("other body policies", "[objects][network]")
 			return n;
 		    });
 
-		CHECK(h.hexdigest() == sha1(req.data).hexdigest());
+		CHECK(h.hexdigest() == sha1(req.content).hexdigest());
 	}
 
 	SECTION("from callback to content")

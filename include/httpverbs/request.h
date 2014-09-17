@@ -96,7 +96,7 @@ public:
 
 	std::string url;
 	header_dict headers;
-	std::string data;
+	std::string content;
 
 	request(char const* method, std::string url);
 
@@ -143,7 +143,7 @@ request::request(request&& other) :
 	handle_(std::move(other.handle_)),
 	url(std::move(other.url)),
 	headers(std::move(other.headers)),
-	data(std::move(other.data))
+	content(std::move(other.content))
 {}
 
 inline
@@ -162,19 +162,19 @@ void swap(request& a, request& b)
 	swap(a.handle_, b.handle_);
 	swap(a.url, b.url);
 	swap(a.headers, b.headers);
-	swap(a.data, b.data);
+	swap(a.content, b.content);
 }
 
 inline
 response request::perform()
 {
-	return perform(keywords::data_from(data));
+	return perform(keywords::data_from(content));
 }
 
 inline
 response request::perform(callback_t writer)
 {
-	return perform(keywords::data_from(data), std::move(writer));
+	return perform(keywords::data_from(content), std::move(writer));
 }
 
 inline

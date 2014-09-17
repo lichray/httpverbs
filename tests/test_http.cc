@@ -120,7 +120,7 @@ SCENARIO("request can send and receive body", "[objects][network]")
 	GIVEN("a request with some data")
 	{
 		auto req = httpverbs::request("PUT", k3);
-		req.data = body;
+		req.content = body;
 
 		WHEN("the key is created")
 		{
