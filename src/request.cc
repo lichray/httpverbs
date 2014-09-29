@@ -163,6 +163,9 @@ void request::perform_on(response& resp)
 	if (curl_easy_setopt(handle_.get(), CURLOPT_URL, url.data()))
 		throw bad_request();
 
+	if (curl_easy_setopt(handle_.get(), CURLOPT_ACCEPT_ENCODING, ""))
+		throw bad_request();
+
 	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
 
 #if defined(CURLRES_ASYNCH)

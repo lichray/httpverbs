@@ -20,6 +20,7 @@ class StoreHandler(BaseHTTPRequestHandler):
 
             self.send_header("Content-Type", "text/plain")
             self.send_header("Content-Length", len(s))
+            self.send_header("Content-Encoding", "unknown")
             self.end_headers()
 
             self.wfile.write(s)
