@@ -103,7 +103,7 @@ public:
 	size_type size() const;
 
 private:
-	void add_line_split_at(std::string header, size_t pos);
+	void add_line_split_at(std::string&& header, size_t pos);
 
 	auto next_position(char const* name, size_t name_len)
 		-> iterator;
@@ -292,7 +292,7 @@ auto header_dict::erase(char const* name) -> size_type
 }
 
 inline
-void header_dict::add_line_split_at(std::string header, size_t pos)
+void header_dict::add_line_split_at(std::string&& header, size_t pos)
 {
 	auto it = next_position(header.data(), pos);
 
