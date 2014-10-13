@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.11)
 project(httpverbs)
 enable_testing()
 
@@ -89,13 +89,15 @@ if(WIN32)
 endif()
 
 include_directories(${CURL_INCLUDE_DIRS})
-include_directories(${Boost_INCLUDE_DIRS})
 include_directories(include)
 
 file(GLOB httpverbs_srcs src/*.cc)
 file(GLOB tests_srcs tests/*.cc)
 
 add_library(httpverbs STATIC ${httpverbs_srcs})
+
+target_include_directories(httpverbs PUBLIC ${Boost_INCLUDE_DIRS})
+
 target_link_libraries(httpverbs ${CURL_LIBRARIES})
 target_link_libraries(httpverbs ${Boost_LIBRARIES})
 
@@ -109,6 +111,8 @@ if(BUILD_TESTING)
 endif()
 
 file(GLOB httpverbs_hdrs include/httpverbs/*.h)
+get_target_property(_link_libs httpverbs LINK_LIBRARIES)
+get_target_property(_inc_dir httpverbs INTERFACE_INCLUDE_DIRECTORIES)
 configure_file(httpverbs-config.cmake.in httpverbs-config.cmake)
 export(PACKAGE httpverbs)
 
