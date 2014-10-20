@@ -46,9 +46,6 @@ else()
 		string(REGEX REPLACE "/MD" "/MT" ${flagvar} "${${flagvar}}")
 		string(REGEX REPLACE "/MDd" "/MTd" ${flagvar} "${${flagvar}}")
 	endforeach()
-
-	set(CMAKE_EXE_LINKER_FLAGS
-	    "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
 endif()
 
 if(USE_BOOST_CHRONO)
