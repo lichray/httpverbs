@@ -384,7 +384,7 @@ auto header_dict::matched_range(char const* name, size_t name_len) const
 
 template <typename Iter>
 inline
-auto make_reverse_iterator(Iter it)
+auto _make_reverse_iterator(Iter it)
 	-> std::reverse_iterator<Iter>
 {
 	return std::reverse_iterator<Iter>(it);
@@ -392,7 +392,7 @@ auto make_reverse_iterator(Iter it)
 
 template <typename BidirIt>
 inline
-auto trimmed_range(BidirIt first, BidirIt last)
+auto _trimmed_range(BidirIt first, BidirIt last)
 	-> std::pair<BidirIt, BidirIt>
 {
 	// it's libcurl's job to concatenate multi-line headers,
@@ -404,8 +404,8 @@ auto trimmed_range(BidirIt first, BidirIt last)
 
 	// trim
 	auto fc_b = std::find_if_not(first, last, is_LWS);
-	auto fc_e = std::find_if_not(make_reverse_iterator(last),
-	    make_reverse_iterator(fc_b), is_LWS).base();
+	auto fc_e = std::find_if_not(_make_reverse_iterator(last),
+	    _make_reverse_iterator(fc_b), is_LWS).base();
 
 	return std::pair<BidirIt, BidirIt>(fc_b, fc_e);
 }
@@ -420,7 +420,7 @@ auto header_dict::joined_field_values(const_iterator first,
 
 	while (1)
 	{
-		auto fc = trimmed_range(begin(*it) + name_len + 1, end(*it));
+		auto fc = _trimmed_range(begin(*it) + name_len + 1, end(*it));
 		v.append(fc.first, fc.second);
 
 		if (++it != last)
