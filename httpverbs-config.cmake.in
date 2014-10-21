@@ -4,8 +4,8 @@
 #  httpverbs_LIBRARIES    - libraries to link against
 #  httpverbs_LINK_LIBRARIES - only the dependent libraries
 
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/httpverbs/httpverbs-targets.cmake)
+include("@CMAKE_INSTALL_PREFIX@/lib/cmake/httpverbs/httpverbs-targets.cmake")
 
-set(httpverbs_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include @_inc_dir@)
+set(httpverbs_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include" "@_inc_dir@")
 set(httpverbs_LIBRARIES httpverbs)
-set(httpverbs_LINK_LIBRARIES @_link_libs@)
+set(httpverbs_LINK_LIBRARIES "@_link_libs@")
