@@ -45,7 +45,7 @@ struct response
 		status_code(status_code)
 	{}
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1900
 	response(response&& other);
 	response& operator=(response&& other);
 #endif
@@ -73,7 +73,7 @@ private:
 	response() {}  // status_code code has an indeterminate value
 };
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1900
 
 inline
 response::response(response&& other) :

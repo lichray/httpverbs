@@ -100,11 +100,10 @@ public:
 
 	request(char const* method, std::string url);
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
 	request(request&& other);
-	request& operator=(request other);
-
-	friend
-	void swap(request& a, request& b);
+	request& operator=(request&& other);
+#endif
 
 	friend
 	bool operator==(request const& a, request const& b)
@@ -129,14 +128,14 @@ public:
 	response perform(length_t n, callback_t reader, callback_t writer);
 
 private:
-	request(request const&);  // = delete
-
 	void setup_request_body_from_bytes(void* p, length_t n);
 	void setup_request_body_from_callback(void* p, length_t n);
 	void setup_response_body_to_string(void* p);
 	void setup_response_body_to_callback(void* p);
 	void perform_on(response& resp);
 };
+
+#if defined(_MSC_VER) && _MSC_VER < 1900
 
 inline
 request::request(request&& other) :
@@ -147,23 +146,17 @@ request::request(request&& other) :
 {}
 
 inline
-request& request::operator=(request other)
+request& request::operator=(request&& other)
 {
-	swap(*this, other);
+	handle_ = std::move(other.handle_);
+	url = std::move(other.url);
+	headers = std::move(other.headers);
+	content = std::move(other.content);
 
 	return *this;
 }
 
-inline
-void swap(request& a, request& b)
-{
-	using std::swap;
-
-	swap(a.handle_, b.handle_);
-	swap(a.url, b.url);
-	swap(a.headers, b.headers);
-	swap(a.content, b.content);
-}
+#endif
 
 inline
 response request::perform()
