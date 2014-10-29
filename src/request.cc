@@ -212,35 +212,35 @@ void request::perform_on(response& resp)
 	resp.url = new_url;
 }
 
-size_t read_string(char* to, size_t sz, size_t nmemb, void* from)
+size_t read_string(char* to, size_t, size_t nmemb, void* from)
 {
 	auto& sv = *reinterpret_cast<_mini_string_ref*>(from);
 
-	auto copied_size = sv.copy(to, sz * nmemb);
+	auto copied_size = sv.copy(to, nmemb);
 	sv.remove_prefix(copied_size);
 
 	return copied_size;
 }
 
-size_t write_string(char* from, size_t sz, size_t nmemb, void* to)
+size_t write_string(char* from, size_t, size_t nmemb, void* to)
 {
 	auto& s = *reinterpret_cast<std::string*>(to);
 
-	s.append(from, sz * nmemb);
+	s.append(from, nmemb);
 
-	return sz * nmemb;
+	return nmemb;
 }
 
-size_t call_function(char* from, size_t sz, size_t nmemb, void* f)
+size_t call_function(char* from, size_t, size_t nmemb, void* f)
 {
-	return (*reinterpret_cast<request::callback_t*>(f))(from, sz * nmemb);
+	return (*reinterpret_cast<request::callback_t*>(f))(from, nmemb);
 }
 
-size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
+size_t fill_headers(char* from, size_t, size_t nmemb, void* to)
 {
 	auto& sk = *reinterpret_cast<headers_parser_stack*>(to);
 
-	BOOST_ASSERT_MSG(sz * nmemb >= 2, "libcurl returns malformed header");
+	BOOST_ASSERT_MSG(nmemb >= 2, "libcurl returns malformed header");
 
 	// discard headers from the last response, if any, and skip
 	// the first line
@@ -251,7 +251,7 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 	}
 	else
 	{
-		auto size_without_CR_LF = sz * nmemb - 2;
+		auto size_without_CR_LF = nmemb - 2;
 
 		if (size_without_CR_LF == 0)
 			sk.done_status_line = false;
@@ -259,7 +259,7 @@ size_t fill_headers(char* from, size_t sz, size_t nmemb, void* to)
 			sk.ls.add(std::string(from, size_without_CR_LF));
 	}
 
-	return sz * nmemb;
+	return nmemb;
 }
 
 }
