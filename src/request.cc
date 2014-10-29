@@ -77,7 +77,7 @@ request& request::ignore_response_body()
 {
 	// use a pointer pointing to an invalid location to represent
 	// that the response body is unwanted
-	curl_easy_setopt(handle_.get(), CURLOPT_PRIVATE, "");
+	curl_easy_setopt(handle_.get(), CURLOPT_PRIVATE, (void*)0x1);
 
 	return *this;
 }
