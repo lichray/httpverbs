@@ -32,7 +32,12 @@ namespace httpverbs
 struct enable_library
 {
 	enable_library();
+	explicit enable_library(char const* ca_info);
 	~enable_library();
+
+private:
+	enable_library(enable_library const&);  // = delete
+	enable_library& operator=(enable_library const&);  // = delete
 };
 
 }

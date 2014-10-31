@@ -23,61 +23,14 @@
  * SUCH DAMAGE.
  */
 
-#include <httpverbs/enable_library.h>
-
-#include <curl/curl.h>
-#include <stdexcept>
-#include <cstring>
-#include <cstdlib>
-
-#include "ca_info.h"
+#ifndef _HTTPVERBS_CA__INFO_H
+#define _HTTPVERBS_CA__INFO_H
 
 namespace httpverbs
 {
 
-char* _ca_info;
+extern char* _ca_info;
 
-static
-#if defined(_MSC_VER)
-__declspec(noinline)
-#else
-__attribute__((noinline))
+}
+
 #endif
-void init_library(char* p)
-{
-	auto r = curl_global_init(CURL_GLOBAL_DEFAULT
-#ifdef CURL_GLOBAL_ACK_EINTR
-	    | CURL_GLOBAL_ACK_EINTR
-#endif
-	    );
-
-	if (r != CURLE_OK)
-		throw std::runtime_error(curl_easy_strerror(r));
-
-	free(_ca_info);
-	_ca_info = p;
-}
-
-enable_library::enable_library()
-{
-	init_library(nullptr);
-}
-
-enable_library::enable_library(char const* ca_info)
-{
-#if defined(WIN32)
-	init_library(_strdup(ca_info));
-#else
-	init_library(strdup(ca_info));
-#endif
-}
-
-enable_library::~enable_library()
-{
-	free(_ca_info);
-	_ca_info = nullptr;
-
-	curl_global_cleanup();
-}
-
-}

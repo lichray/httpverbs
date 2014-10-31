@@ -29,6 +29,7 @@
 #include <boost/assert.hpp>
 
 #include "pooled_perform.h"
+#include "ca_info.h"
 
 namespace httpverbs
 {
@@ -165,6 +166,9 @@ void request::perform_on(response& resp)
 
 	if (curl_easy_setopt(handle_.get(), CURLOPT_ACCEPT_ENCODING, ""))
 		throw bad_request();
+
+	if (_ca_info != nullptr)
+		curl_easy_setopt(handle_.get(), CURLOPT_CAINFO, _ca_info);
 
 	curl_easy_setopt(handle_.get(), CURLOPT_USERAGENT, "httpverbs/0.1");
 
