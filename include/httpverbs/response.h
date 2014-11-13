@@ -41,6 +41,8 @@ struct response
 	header_dict headers;
 	std::string content;
 
+	response() {}  // status_code code has an indeterminate value
+
 	explicit response(int status_code) :
 		status_code(status_code)
 	{}
@@ -66,11 +68,6 @@ struct response
 	}
 
 	bool ok() const;
-
-private:
-	friend struct request;
-
-	response() {}  // status_code code has an indeterminate value
 };
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
