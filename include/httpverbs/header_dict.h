@@ -73,7 +73,7 @@ public:
 
 	header_dict() {}
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1900
 	header_dict(header_dict&& other);
 	header_dict& operator=(header_dict&& other);
 #endif
@@ -121,7 +121,7 @@ private:
 	    size_t);
 };
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1900
 
 inline
 header_dict::header_dict(header_dict&& other) :
