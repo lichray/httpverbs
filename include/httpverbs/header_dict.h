@@ -42,6 +42,23 @@
 namespace httpverbs
 {
 
+struct _mini_ntmbs
+{
+	_mini_ntmbs(char const* str) : it_(str)
+	{}
+
+	_mini_ntmbs(std::string const& str) : it_(str.data())
+	{}
+
+	operator char const*() const
+	{
+		return it_;
+	}
+
+private:
+	char const* it_;
+};
+
 struct header_dict
 {
 private:
@@ -73,28 +90,14 @@ public:
 		return !(a == b);
 	}
 
-	value_type operator[](char const* name) const;
-	value_type operator[](std::string const& name) const;
-
-	boost::optional<value_type> get(char const* name) const;
-	boost::optional<value_type> get(std::string const& name) const;
-
-	void add(std::string header);
-
-	void add(char const* name, char const* value);
-	void add(char const* name, std::string const& value);
-	void add(std::string const& name, char const* value);
-	void add(std::string const& name, std::string const& value);
-
-	void set(char const* name, char const* value);
-	void set(char const* name, std::string const& value);
-	void set(std::string const& name, char const* value);
-	void set(std::string const& name, std::string const& value);
-
-	size_type erase(char const* name);
-	size_type erase(std::string const& name);
+	value_type operator[](_mini_ntmbs name) const;
+	boost::optional<value_type> get(_mini_ntmbs name) const;
 
 	void clear();
+	void add(std::string header);
+	void add(_mini_ntmbs name, _mini_ntmbs value);
+	void set(_mini_ntmbs name, _mini_ntmbs value);
+	size_type erase(_mini_ntmbs name);
 
 	friend const_iterator begin(header_dict const& d);
 	friend const_iterator end(header_dict const& d);
@@ -136,61 +139,6 @@ header_dict& header_dict::operator=(header_dict&& other)
 #endif
 
 inline
-auto header_dict::operator[](std::string const& name) const -> value_type
-{
-	return (*this)[name.data()];
-}
-
-inline
-auto header_dict::get(std::string const& name) const
-	-> boost::optional<value_type>
-{
-	return get(name.data());
-}
-
-inline
-void header_dict::add(std::string const& name, std::string const& value)
-{
-	add(name.data(), value.data());
-}
-
-inline
-void header_dict::add(std::string const& name, char const* value)
-{
-	add(name.data(), value);
-}
-
-inline
-void header_dict::add(char const* name, std::string const& value)
-{
-	add(name, value.data());
-}
-
-inline
-void header_dict::set(std::string const& name, std::string const& value)
-{
-	set(name.data(), value.data());
-}
-
-inline
-void header_dict::set(std::string const& name, char const* value)
-{
-	set(name.data(), value);
-}
-
-inline
-void header_dict::set(char const* name, std::string const& value)
-{
-	set(name, value.data());
-}
-
-inline
-auto header_dict::erase(std::string const& name) -> size_type
-{
-	return erase(name.data());
-}
-
-inline
 void header_dict::clear()
 {
 	hlist_.clear();
@@ -221,7 +169,7 @@ auto header_dict::size() const -> size_type
 }
 
 inline
-void header_dict::add(char const* name, char const* value)
+void header_dict::add(_mini_ntmbs name, _mini_ntmbs value)
 {
 	auto nl = std::char_traits<char>::length(name);
 	auto vl = std::char_traits<char>::length(value);
@@ -241,7 +189,7 @@ void header_dict::add(std::string header)
 }
 
 inline
-auto header_dict::operator[](char const* name) const -> value_type
+auto header_dict::operator[](_mini_ntmbs name) const -> value_type
 {
 	auto name_len = std::char_traits<char>::length(name);
 	auto hr = matched_range(name, name_len);
@@ -252,7 +200,7 @@ auto header_dict::operator[](char const* name) const -> value_type
 }
 
 inline
-auto header_dict::get(char const* name) const -> boost::optional<value_type>
+auto header_dict::get(_mini_ntmbs name) const -> boost::optional<value_type>
 {
 	auto name_len = std::char_traits<char>::length(name);
 	auto hr = matched_range(name, name_len);
@@ -264,7 +212,7 @@ auto header_dict::get(char const* name) const -> boost::optional<value_type>
 }
 
 inline
-void header_dict::set(char const* name, char const* value)
+void header_dict::set(_mini_ntmbs name, _mini_ntmbs value)
 {
 	auto nl = std::char_traits<char>::length(name);
 	auto vl = std::char_traits<char>::length(value);
@@ -281,7 +229,7 @@ void header_dict::set(char const* name, char const* value)
 }
 
 inline
-auto header_dict::erase(char const* name) -> size_type
+auto header_dict::erase(_mini_ntmbs name) -> size_type
 {
 	auto hr = matched_range(name, std::char_traits<char>::length(name));
 	auto diff = hr.second - hr.first;
