@@ -149,3 +149,29 @@ TEST_CASE("header_dict edge cases", "[objects]")
 		REQUIRE(hdr.empty());
 	}
 }
+
+#if !(defined(_MSC_VER) && _MSC_VER < 1800)
+
+TEST_CASE("header_dict braced-init", "[objects]")
+{
+	std::string sophia = "Sophia";
+	httpverbs::header_dict hdr =
+	{
+	    {"captain", "Alexander"},
+	    {"vice-captain", sophia},
+	    {"captain", sophia},
+	};
+
+	REQUIRE(hdr.size() == 3);
+	REQUIRE(hdr["captain"] == "Alexander, Sophia");
+
+	hdr =
+	{
+	    {"captain", "Tatiana"},
+	    {"vice-captain", "Alister"},
+	};
+
+	REQUIRE(hdr.size() == 2);
+}
+
+#endif

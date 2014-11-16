@@ -73,6 +73,13 @@ public:
 
 	header_dict() {}
 
+#if !(defined(_MSC_VER) && _MSC_VER < 1800)
+	header_dict(std::initializer_list<
+	    std::pair<_mini_ntmbs, _mini_ntmbs>> headers);
+	header_dict& operator=(std::initializer_list<
+	    std::pair<_mini_ntmbs, _mini_ntmbs>> headers);
+#endif
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	header_dict(header_dict&& other);
 	header_dict& operator=(header_dict&& other);
@@ -120,6 +127,30 @@ private:
 	static value_type joined_field_values(const_iterator, const_iterator,
 	    size_t);
 };
+
+#if !(defined(_MSC_VER) && _MSC_VER < 1800)
+
+inline
+header_dict::header_dict(std::initializer_list<
+    std::pair<_mini_ntmbs, _mini_ntmbs>> headers)
+{
+	for (auto&& kv : headers)
+		add(kv.first, kv.second);
+}
+
+inline
+header_dict& header_dict::operator=(std::initializer_list<
+    std::pair<_mini_ntmbs, _mini_ntmbs>> headers)
+{
+	clear();
+
+	for (auto&& kv : headers)
+		add(kv.first, kv.second);
+
+	return *this;
+}
+
+#endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 
