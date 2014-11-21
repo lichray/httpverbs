@@ -42,9 +42,8 @@ auto from_c_file(FILE* stream)
 	    std::placeholders::_2,
 	    stream))
 {
-	using namespace std::placeholders;
-
-	return std::bind(fread, _1, 1, _2, stream);
+	return std::bind(fread, std::placeholders::_1, 1,
+	    std::placeholders::_2, stream);
 }
 
 auto to_c_file(FILE* stream)
@@ -55,9 +54,8 @@ auto to_c_file(FILE* stream)
 	    std::placeholders::_2,
 	    stream))
 {
-	using namespace std::placeholders;
-
-	return std::bind(fwrite, _1, 1, _2, stream);
+	return std::bind(fwrite, std::placeholders::_1, 1,
+	    std::placeholders::_2, stream);
 }
 
 }
