@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include <httpverbs/header_dict.h>
+#include <boost/optional/optional_io.hpp>
 
 SCENARIO("header_dict can be copied and moved", "[objects]")
 {

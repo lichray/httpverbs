@@ -3,6 +3,7 @@
 #include "test_data.h"
 
 #include <httpverbs/httpverbs.h>
+#include <boost/optional/optional_io.hpp>
 
 #include <curl/curlver.h>
 

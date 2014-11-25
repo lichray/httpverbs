@@ -76,6 +76,8 @@ public:
 #if !(defined(_MSC_VER) && _MSC_VER < 1800)
 	header_dict(std::initializer_list<
 	    std::pair<_mini_ntmbs, _mini_ntmbs>> headers);
+#endif
+#if !(defined(_MSC_VER) && _MSC_VER < 1900)
 	header_dict& operator=(std::initializer_list<
 	    std::pair<_mini_ntmbs, _mini_ntmbs>> headers);
 #endif
@@ -137,6 +139,10 @@ header_dict::header_dict(std::initializer_list<
 	for (auto&& kv : headers)
 		add(kv.first, kv.second);
 }
+
+#endif
+
+#if !(defined(_MSC_VER) && _MSC_VER < 1900)
 
 inline
 header_dict& header_dict::operator=(std::initializer_list<

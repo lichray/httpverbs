@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include <httpverbs/httpverbs.h>
+#include <boost/optional/optional_io.hpp>
 
 httpverbs::enable_library _;
 std::string host = "http://localhost:8080/";

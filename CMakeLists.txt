@@ -49,7 +49,7 @@ else()
 endif()
 
 if(USE_BOOST_CHRONO)
-	set(boost_in_use ${boost_in_use} system)
+	set(boost_in_use system)
 else()
 	CHECK_INCLUDE_FILE_CXX(chrono HAVE_CHRONO)
 	if(NOT HAVE_CHRONO)
@@ -59,7 +59,7 @@ else()
 endif()
 
 if(PER_THREAD_CACHE AND USE_BOOST_TSS)
-	set(boost_in_use ${boost_in_use} thread)
+	set(boost_in_use system thread)
 elseif(PER_THREAD_CACHE)
 	CHECK_CXX_SOURCE_COMPILES("
 	    #include <string>
