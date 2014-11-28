@@ -35,8 +35,10 @@
 #include <iterator>
 
 #if defined(_MSC_VER)
-#define NOMINMAX
 #include <ciso646>
+# ifndef NOMINMAX
+# define NOMINMAX
+# endif
 #endif
 
 namespace httpverbs
