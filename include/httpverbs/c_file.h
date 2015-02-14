@@ -34,6 +34,7 @@ namespace httpverbs
 namespace keywords
 {
 
+inline
 auto from_c_file(FILE* stream)
 	-> decltype(std::bind(
 	    fread,
@@ -46,6 +47,7 @@ auto from_c_file(FILE* stream)
 	    std::placeholders::_2, stream);
 }
 
+inline
 auto to_c_file(FILE* stream)
 	-> decltype(std::bind(
 	    fwrite,

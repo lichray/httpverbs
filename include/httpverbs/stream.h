@@ -63,12 +63,14 @@ private:
 namespace keywords
 {
 
+inline
 auto from_stream(std::istream& is)
 	-> _request_sgetn_cb
 {
 	return _request_sgetn_cb(is.rdbuf());
 }
 
+inline
 auto to_stream(std::ostream& os)
 	-> _request_sputn_cb
 {
